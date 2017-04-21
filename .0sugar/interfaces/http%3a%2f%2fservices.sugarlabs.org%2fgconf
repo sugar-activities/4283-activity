@@ -1,0 +1,26 @@
+<?xml version="1.0" ?>
+<?xml-stylesheet type='text/xsl' href='/interface.xsl'?>
+<interface uri="http://services.sugarlabs.org/gconf"
+           xmlns="http://zero-install.sourceforge.net/2004/injector/interface"
+           xmlns:compile="http://zero-install.sourceforge.net/2006/namespaces/0compile"
+           xmlns:sugar="http://download.sugarlabs.org/services/saccharin/namespaces/0sugar">
+    <name>gconf</name>
+    <summary>Gnome Configuration System and Daemon</summary>
+    <description>Gnome Configuration System and Daemon</description>
+    <homepage>http://www.gnome.org/</homepage>
+    <sugar:sibling interface="http://services.sugarlabs.org/gconf/devel.xml"/>
+    <package-implementation package="GConf" distributions="RPM"/>
+    <package-implementation package="gconf2" distributions="RPM"/>
+    <package-implementation package="GConf2" distributions="RPM"/>
+    <package-implementation package="gconf2" distributions="Debian"/>
+    <package-implementation package="gnome-base/gconf" distributions="Gentoo"/>
+</interface>
+<!-- Base64 Signature
+iQEcBAABAgAGBQJLeTGNAAoJEHI8xbS2hpuBGXEH/1844MxbuKQYBcQvWuDIj856++DWYL9xhg5k
+SbFFgWiysM9xgrkYDGGLSfTjdQaYXCuCnn+OlkS41PmROtLK1N7l3DrSPt0onhxUburvqsrCbrY6
+8x4LJ3zPrijmGGN2YH1n/BfxufhGNJCPu//kMvxExHRE4fUZW6N2NlkzmubfV57Lo/6wUcT39PcH
+UI9NblopMfGd2XSW1VSv3xsz3UKH2NXMsmpB+UZMng1FI/2v8v1XyG6mDi+e5H9wF+AkbK7fxXl6
+U/NR8bBLGsS/ycJe3M6BbDVbzZQ2tQL9C08kPFP/RqHJgGQRYlPxel7lD7y+qY+W0nEa8xISmdnR
+JYE=
+
+-->

@@ -1,0 +1,30 @@
+<?xml version="1.0" ?>
+<interface uri="http://download.sugarlabs.org/services/noarch/1.xml"
+           xmlns="http://zero-install.sourceforge.net/2004/injector/interface"
+           xmlns:compile="http://zero-install.sourceforge.net/2006/namespaces/0compile"
+           xmlns:sugar="http://download.sugarlabs.org/services/saccharin/namespaces/0sugar">
+    <name>noarch/1</name>
+    <summary>noarch summary</summary>
+    <description>noarch summary</description>
+    <homepage>http://noarch/</homepage>
+    <implementation id="sha1new=f98553327c29a976d06b611b34f12e88191df3f9"
+                    version="1-1"
+                    released="new"
+                    arch="*-*"
+                    license="GPLv2+"
+                    stability="testing"
+                    main="1">
+        <requires interface="http://download.sugarlabs.org/services/1/1.xml">
+        </requires>
+        <archive href="http://download.sugarlabs.org/services/noarch/1-1-1.tar.bz2" size="116"/>
+    </implementation>
+</interface>
+<!-- Base64 Signature
+iQEcBAABAgAGBQJLYhTeAAoJEHI8xbS2hpuB7VAH/R6/c1GvrfSgygVe5UM7NbL219j1P6jzX1e7
+GhEJk7BTKi947nBsr+tnxlR0Wu86aWoji9j3rVXRTW7HkngaC+x6ZLwm7Q0TuzUspuWGNkQDagI1
+jReT6nk0tzKksCoXg9crFEa+7QskAaa8+1+cwt0Pvh7l/F2xJyROUo4/4JZanNiWIgxqDJQRhDmz
+N2gaVzGrpBQbRaUwh4FDeRAdkD1fmDBvAu/zCK4aKQGiI95gLjA8OlQJxU7ALcq7Oze/k5n55mER
+fG4rn5fu8PHhGEh/MJFoxcarTVM9g3gyFF8Go6VXw7BMABZIeBoAtDQ839DwCajtORhXi0VGBcrq
+F3U=
+
+-->

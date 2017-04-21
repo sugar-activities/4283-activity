@@ -1,0 +1,54 @@
+#!/bin/sh
+
+restricted_mhz=500
+restricted_settings=""
+
+args="--drag-mode=both --nolockcheck --sound --sugar"
+
+# arguments are unordered, have to loop
+while [ -n "$2" ] ; do
+    case "$1" in
+      	-b | --bundle-id)
+            args="$args --sugarBundleId=$2"
+            shift
+            ;;
+      	-a | --activity-id)
+            args="$args --sugarActivityId=$2"
+            shift
+            ;;
+        *)  args="$args $1 $2"
+            ;;
+    esac
+    shift
+done
+
+# check for rainbow
+if [ -e /etc/olpc-security ]; then
+    umask 0002
+    GCOMPRIS_USERDIR="$SUGAR_ACTIVITY_ROOT/data/MyGCompris"
+    args="$args --config-dir $GCOMPRIS_USERDIR"
+    args="$args --user-dir $GCOMPRIS_USERDIR"
+else
+    GCOMPRIS_USERDIR="$HOME/My GCompris"
+fi
+
+# check for restricted systems
+cpu_mhz=$(cat /proc/cpuinfo | grep '^cpu MHz' | head -n1 | awk -F: '{print int($2)}')
+if [ $cpu_mhz -lt $restricted_mhz ]; then
+    [ -e "$GCOMPRIS_USERDIR" ] || args="$args --no-zoom"
+    args="$args $restricted_settings"
+fi
+
+if [ "$SUGAR_LOGGER_LEVEL" ]; then
+    args="$args --debug"
+fi
+
+[ -e "$GCOMPRIS_USERDIR" ] || mkdir -p "$GCOMPRIS_USERDIR"
+
+# do not crash on dbus errors
+export DBUS_FATAL_WARNINGS=0
+
+
+# now run Gcompris
+echo "$0" "$args"
+exec gcompris $args

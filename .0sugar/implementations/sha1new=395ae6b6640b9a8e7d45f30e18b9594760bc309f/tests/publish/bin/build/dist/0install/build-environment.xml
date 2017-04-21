@@ -1,0 +1,5 @@
+<?xml version="1.0" ?>
+<selections interface="/home/sugar/src/git/0sugar/tests/bin/build/feed.xml" xmlns="http://zero-install.sourceforge.net/2004/injector/interface" xmlns:ns0="http://zero-install.sourceforge.net/2006/namespaces/0compile">
+  <selection arch="*-src" id="/home/sugar/src/git/0sugar/tests/bin/build/src/hello-1.3" interface="/home/sugar/src/git/0sugar/tests/bin/build/feed.xml" license="GPLv2+" ns0:command="&quot;$SRCDIR&quot;/configure --prefix=&quot;$DISTDIR&quot; CFLAGS=&quot;-O2&quot; &amp;&amp; make install" released="new" stability="testing" version="1.3"/>
+  <build-info arch="Linux-x86_64" host="localhost" time="2010-01-28 03:56" user="me"/>
+</selections>

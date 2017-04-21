@@ -1,0 +1,25 @@
+<?xml version="1.0" ?>
+<?xml-stylesheet type='text/xsl' href='/interface.xsl'?>
+<interface uri="http://services.sugarlabs.org/libgsf"
+           xmlns="http://zero-install.sourceforge.net/2004/injector/interface"
+           xmlns:compile="http://zero-install.sourceforge.net/2006/namespaces/0compile"
+           xmlns:sugar="http://download.sugarlabs.org/services/saccharin/namespaces/0sugar">
+    <name>libgsf</name>
+    <summary>The GNOME Structured File Library</summary>
+    <description>The GNOME Structured File Library</description>
+    <homepage>http://www.gnome.org/</homepage>
+    <sugar:sibling interface="http://services.sugarlabs.org/libgsf/devel.xml"/>
+    <package-implementation package="libgsf" distributions="RPM"/>
+    <package-implementation package="libgsf-1_114" distributions="RPM"/>
+    <package-implementation package="libgsf-1-114" distributions="Debian"/>
+    <package-implementation package="gnome-extra/libgsf" distributions="Gentoo"/>
+</interface>
+<!-- Base64 Signature
+iQEcBAABAgAGBQJLeTH1AAoJEHI8xbS2hpuBi2kH/0JaYiUskwtXTfVle07AtQLPQHURD4uO2POr
+n11foe7uc9aI22N4qnr5WOWpCO9oq4TDHWsEldY7d8N5F7NwYfsfBveA8RFHvbUfCT9OeE8cWyRs
+2YLnldRVhaMiFabjrES7mqUvK2kFMog+e/VYkQMcT9f7wcLMm2JFlgwCx5NZGMUp6z7V91itiI3G
+1+kIERgiKb+bjdCQtStkZgsn2zyIjOXW7Lgqh/soFBe6ietvvJrlQuKBkXftlsc6KjABEUebOKV+
+FVKpvL1nMf/vv2vP71+ErtVDSMmo4ksbnNj5Gq7hWrf1AVyKUNlP4igNK7+guonsAW7FMdy22Wiz
+RoM=
+
+-->

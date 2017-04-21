@@ -1,0 +1,21 @@
+<?xml version="1.0" ?>
+<interface uri="http://download.sugarlabs.org/services/packages/service.xml"
+           xmlns="http://zero-install.sourceforge.net/2004/injector/interface"
+           xmlns:compile="http://zero-install.sourceforge.net/2006/namespaces/0compile"
+           xmlns:sugar="http://download.sugarlabs.org/services/saccharin/namespaces/0sugar">
+    <name>packages</name>
+    <summary>packages summary</summary>
+    <description>packages summary</description>
+    <homepage>http://packages/</homepage>
+    <package-implementation package="name3" distro="oof"/>
+    <package-implementation package="name2" distro="foo"/>
+</interface>
+<!-- Base64 Signature
+iQEcBAABAgAGBQJLX5xaAAoJEHI8xbS2hpuBSeUH/2cvPAa4uaOR5EAFRz0f2T2j4U0kIKo6USCk
+is0b9WkMquxL+6jcl8odSq2ETUg2oHLDek7ukSr1IR69mGQgSmWLbig/3B8LObunMfX1mnIA0mcF
+iwyYTdauAIpXOU1Q+ZGdjiY/+ahr7dA2YB9ez34UP5GLcVAJQzl2NosRCFtKuU3c5xffKzJOqR/i
+ehqm0zbp+Me4HEfSSUMsmBbj9ECdgiT8sBJtHLPClfXsXCpmGrnPA4ZDx56d1pISKafAfBKtTsd8
+KmCYodWsY7sVLRjKGxAxNyvgpGZ/sI6Tv5itUOwyRXZL8L/Uoehc3SKczaPan+X09vK1kA7ZAtGG
+dQk=
+
+-->

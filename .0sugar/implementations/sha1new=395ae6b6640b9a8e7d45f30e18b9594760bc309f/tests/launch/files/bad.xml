@@ -1,0 +1,15 @@
+<?xml version="1.0" ?>
+<interface xmlns="http://zero-install.sourceforge.net/2004/injector/interface">
+    <name>test</name>
+    <summary>just for test</summary>
+  <description>
+</description>
+  <implementation id="." released="2009-12-13" version="1">
+    <requires interface="http://localhost:8000/files/dependency.xml">
+      <environment mode="prepend" name="PATH"/>
+    </requires>
+    <requires interface="http://localhost:8000/files/download.xml">
+      <environment mode="prepend" name="LD_LIBRARY_PATH"/>
+    </requires>
+  </implementation>
+</interface>

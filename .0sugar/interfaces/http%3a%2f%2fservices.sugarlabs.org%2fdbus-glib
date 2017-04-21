@@ -1,0 +1,27 @@
+<?xml version="1.0" ?>
+<?xml-stylesheet type='text/xsl' href='/interface.xsl'?>
+<interface uri="http://services.sugarlabs.org/dbus-glib"
+           xmlns="http://zero-install.sourceforge.net/2004/injector/interface"
+           xmlns:compile="http://zero-install.sourceforge.net/2006/namespaces/0compile"
+           xmlns:sugar="http://download.sugarlabs.org/services/saccharin/namespaces/0sugar">
+    <name>dbus-glib</name>
+    <summary>D-Bus bindings for glib</summary>
+    <description>D-Bus bindings for glib</description>
+    <homepage>http://dbus.freedesktop.org/</homepage>
+    <sugar:sibling interface="http://services.sugarlabs.org/dbus-glib/devel.xml"/>
+    <package-implementation package="libdbus-glib" distributions="RPM"/>
+    <package-implementation package="libdbus-glib-1_2" distributions="RPM"/>
+    <package-implementation package="dbus-1-glib" distributions="RPM"/>
+    <package-implementation package="dbus-glib" distributions="RPM"/>
+    <package-implementation package="libdbus-glib-1-2" distributions="Debian"/>
+    <package-implementation package="dev-libs/dbus-glib" distributions="Gentoo"/>
+</interface>
+<!-- Base64 Signature
+iQEcBAABAgAGBQJLeTEyAAoJEHI8xbS2hpuBkiYH/RdboVjiXo6whURZunJk4DwWXvcmBsyv2LiL
+qAApehroB8/6FZzo6iAzuyr3qjSrh3gNit1uu1hE1kNpjZlFTxbMl2h4/QnU6KURX9VJ9KQpwgvY
+6a8aYXQagNM21Xa5qyfOwbfY4DCnJRUiq0Y8mzwdoFktxIiUOhflFwi9cCit7hqT02VbbV7FgBZi
+7MlkC2BmuRtRzvYHt9AqzPlIXClhp3xd0QoAqLds5ES4umXpb84vw31DoEL2OONpOoBDuPzEXvAn
+v3Ia+Gm1xEfOHcAYVbZbWm92C5B3boR55PtOFlTMKmDbgKfTFPMCaVC5/I/jJ9of+3Zx2TB0kmhh
+lxc=
+
+-->

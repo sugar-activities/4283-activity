@@ -1,0 +1,10 @@
+[Activity]
+name = GCompris Scalesboard Weight
+license = GPLv3+
+exec = .0sugar/launch +../GComprisContent.activity/.0sugar-injection/implementations bin/gcompris-activity
+activity_version = 14
+suggests = gcompris/media
+bundle_id = net.gcompris.scalesboardweight
+requires = gcompris/scalesboard_weight
+icon = scalesboard_weight
+

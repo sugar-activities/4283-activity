@@ -1,0 +1,27 @@
+<?xml version="1.0" ?>
+<?xml-stylesheet type='text/xsl' href='/interface.xsl'?>
+<interface uri="http://services.sugarlabs.org/gst-plugins-good"
+           xmlns="http://zero-install.sourceforge.net/2004/injector/interface"
+           xmlns:compile="http://zero-install.sourceforge.net/2006/namespaces/0compile"
+           xmlns:sugar="http://download.sugarlabs.org/services/saccharin/namespaces/0sugar">
+    <name>gst-plugins-good</name>
+    <summary>GStreamer streaming media framework good plug-ins</summary>
+    <description>GStreamer streaming media framework good plug-ins</description>
+    <homepage>http://gstreamer.sourceforge.net</homepage>
+    <sugar:sibling interface="http://services.sugarlabs.org/gst-plugins-good/devel.xml"/>
+    <package-implementation package="gstreamer0.10-good-plugins" distributions="archlinux"/>
+    <package-implementation package="gstreamer0.10-plugins-good" distributions="RPM"/>
+    <package-implementation package="gstreamer-0_10-plugins-good" distributions="RPM"/>
+    <package-implementation package="gstreamer-plugins-good" distributions="RPM"/>
+    <package-implementation package="gstreamer0.10-plugins-good" distributions="Debian"/>
+    <package-implementation package="media-libs/gst-plugins-good" distributions="Gentoo"/>
+</interface>
+<!-- Base64 Signature
+iQEcBAABAgAGBQJLeTG1AAoJEHI8xbS2hpuBImgIAKv6jZi0jc9dZ9AKHPO/xicHpchCDz+cwObY
+koB4hW9xVKb1gGMdEij5pVd8qgwNkl+177WI/e8793xR5laWbYTOwb6n6CxFIV15OJrFdX2aa5kd
+fIcEcTbg6P5Sfn0LeD4zW5sZBu6ChCvz/XwZMKBC3euxvl4eZRrONOvDDFWLhTi9sVB9ZtZxfXS+
+0zMk9L9MepZQqasFbEvCzJSIEYehD4MY4Cz420srqf9Hy6971R3Gifk/8uO6Ixl1tX+TwIgSo+mr
+xUVxJoXcYaTSue4w7zM4QpKEZBvc34A0M3lgsVtvwL4MtRZZYtE2RYsBKDSmim9yv6kc/p64kgee
+wa4=
+
+-->

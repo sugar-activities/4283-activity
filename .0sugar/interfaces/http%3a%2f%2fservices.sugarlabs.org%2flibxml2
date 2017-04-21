@@ -1,0 +1,58 @@
+<?xml version="1.0" ?>
+<?xml-stylesheet type='text/xsl' href='/interface.xsl'?>
+<interface uri="http://services.sugarlabs.org/libxml2"
+           xmlns="http://zero-install.sourceforge.net/2004/injector/interface"
+           xmlns:compile="http://zero-install.sourceforge.net/2006/namespaces/0compile"
+           xmlns:sugar="http://download.sugarlabs.org/services/saccharin/namespaces/0sugar">
+    <name>libxml2</name>
+    <summary>Version 2 of the library to manipulate XML files</summary>
+    <description>Version 2 of the library to manipulate XML files</description>
+    <homepage>http://www.xmlsoft.org/</homepage>
+    <sugar:sibling interface="http://services.sugarlabs.org/libxml2/devel.xml"/>
+    <package-implementation package="libxml2" distributions="RPM"/>
+    <package-implementation package="libxml2" distributions="Debian"/>
+    <package-implementation package="dev-libs/libxml2" distributions="Gentoo"/>
+    <implementation id="sha1new=7b6347b170f7b15e98634e60a807377bf221540d"
+                    version="2.7.3-8"
+                    released="2010-02-06"
+                    arch="Linux-i486"
+                    license="MIT"
+                    stability="stable">
+        <environment name="LD_LIBRARY_PATH" mode="prepend" insert="lib"/>
+        <archive href="http://download.sugarlabs.org/services/libxml2/libxml2-2.7.3-8-Linux-i486.tar.bz2" size="489481"/>
+    </implementation>
+    <implementation id="sha1new=dedd037b56a428efcb98182e13585b57e9244fbe"
+                    version="2.7.3-8"
+                    released="2010-02-06"
+                    arch="Linux-x86_64"
+                    license="MIT"
+                    stability="stable">
+        <environment name="LD_LIBRARY_PATH" mode="prepend" insert="lib"/>
+        <archive href="http://download.sugarlabs.org/services/libxml2/libxml2-2.7.3-8-Linux-x86_64.tar.bz2" size="533653"/>
+    </implementation>
+    <implementation id="sha1new=469d91c99cffcb32cf59baf9395fd596c3e58871"
+                    version="2.7.3-5"
+                    released="2010-02-04"
+                    arch="*-src"
+                    license="MIT"
+                    stability="stable"
+                    compile:command='"$SRCDIR"/configure CFLAGS="-O2 -pipe" --prefix="$DISTDIR" --disable-static --disable-rebuild-docs --without-debug --without-run-debug --without-python --without-readline  &amp;&amp; make &amp;&amp; make install-strip'>
+        <environment name="PATH" mode="prepend" insert="bin"/>
+        <environment name="LD_LIBRARY_PATH" mode="prepend" insert="lib"/>
+        <environment name="PKG_CONFIG_PATH" mode="prepend" insert="lib/pkgconfig"/>
+        <requires interface="http://services.sugarlabs.org/gcc-c">
+        </requires>
+        <requires interface="http://services.sugarlabs.org/make">
+        </requires>
+        <archive href="ftp://xmlsoft.org/libxml2/libxml2-2.7.3.tar.gz" size="4789450" extract="libxml2-2.7.3"/>
+    </implementation>
+</interface>
+<!-- Base64 Signature
+iQEcBAABAgAGBQJLeTITAAoJEHI8xbS2hpuBGeYH/RE84ltQGJ5ucV7414nTe5gB2Kouh59AmAu4
+j69flYRqSudxoBj9PAizYN3vGcyrc7WUiMmw3kZQqa7OkHlheqUEa7+IeXyLDGanG+yS2zLLfuo9
+FignnntpsyxDRgyzscsJnIhwlmJ16orkNLctB39OvTVST2ph9DWGfwm+GldMIUkzfSLFG2LneteK
+ja4huDIasPIPfk8MLXP1UFjH3aIPSy/vtERxdkseJ9gbKDzoScyiWHmUGB5uTh0kLa6vjJ/q957o
++E2FWMjwhf6HstKsRf/GG6gV/X1IrQW8ymE4nuqHijka9U9YZOFVIS4tmouG0SiLIRc8U7GtHuPp
+0wQ=
+
+-->

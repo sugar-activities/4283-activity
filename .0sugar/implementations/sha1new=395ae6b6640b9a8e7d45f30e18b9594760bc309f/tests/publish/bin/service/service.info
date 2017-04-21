@@ -1,0 +1,20 @@
+[DEFAULT]
+name = bin
+summary = bin summary
+license = GPLv2+
+homepage = http://bin/
+
+[Service]
+#requires = 1
+main = noarch-main
+arch = build
+include = *
+
+[Service/1]
+#requires = 2
+main = 1
+include = hello
+
+[Build]
+#requires = 3
+exec = "$SRCDIR"/configure --prefix="$DISTDIR" CFLAGS="-O2" && make install

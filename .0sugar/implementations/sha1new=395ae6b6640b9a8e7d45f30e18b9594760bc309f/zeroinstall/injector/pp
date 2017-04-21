@@ -1,0 +1,1671 @@
+From 60c48b3ab568b3bb103be5e0abe82479d31582ed Mon Sep 17 00:00:00 2001
+From: Aleksey Lim <alsroot@member.fsf.org>
+Date: Sun, 20 Dec 2009 15:50:54 +0000
+Subject: Move magic strings to Implementation methods
+
+
+diff --git a/zeroinstall/0launch-gui/impl_list.py b/zeroinstall/0launch-gui/impl_list.py
+index 75a2066..d472570 100644
+--- a/zeroinstall/0launch-gui/impl_list.py
++++ b/zeroinstall/0launch-gui/impl_list.py
+@@ -59,9 +59,9 @@ class ImplTips(TreeTips):
+ 
+ 	def get_tooltip_text(self):
+ 		impl = self.item
+-		if impl.id.startswith('/'):
++		if impl.is_local():
+ 			return _("Local: %s") % impl.id
+-		if impl.id.startswith('package:'):
++		if impl.is_package():
+ 			return _("Native package: %s") % impl.id.split(':', 1)[1]
+ 		if self.policy.get_cached(impl):
+ 			return _("Cached: %s") % self.policy.get_implementation_path(impl)
+@@ -136,7 +136,7 @@ class ImplementationList:
+ 			stability_menu.show()
+ 			menu.append(stability_menu)
+ 
+-			if self.policy.get_cached(impl):
++			if not impl.is_package() and self.policy.get_cached(impl):
+ 				def open():
+ 					os.spawnlp(os.P_WAIT, '0launch',
+ 						'0launch', rox_filer, '-d',
+diff --git a/zeroinstall/0launch-gui/utils.py b/zeroinstall/0launch-gui/utils.py
+index eeb4593..e369109 100644
+--- a/zeroinstall/0launch-gui/utils.py
++++ b/zeroinstall/0launch-gui/utils.py
+@@ -8,9 +8,9 @@ def get_fetch_info(policy, impl):
+ 	if impl is None:
+ 		return ""
+ 	elif policy.get_cached(impl):
+-		if impl.id.startswith('/'):
++		if impl.is_local():
+ 			return _('(local)')
+-		elif impl.id.startswith('package:'):
++		elif impl.is_package():
+ 			return _('(package)')
+ 		else:
+ 			return _('(cached)')
+diff --git a/zeroinstall/injector/fetch.py b/zeroinstall/injector/fetch.py
+index 34986af..60b9caa 100644
+--- a/zeroinstall/injector/fetch.py
++++ b/zeroinstall/injector/fetch.py
+@@ -300,8 +300,8 @@ class Fetcher(object):
+ 		assert retrieval_method
+ 
+ 		from zeroinstall.zerostore import manifest
+-		alg = impl.id.split('=', 1)[0]
+-		if alg not in manifest.algorithms:
++		alg = impl.get_algorithm()
++		if alg and alg not in manifest.algorithms:
+ 			raise SafeException(_("Unknown digest algorithm '%(algorithm)s' for '%(implementation)s' version %(version)s") %
+ 					{'algorithm': alg, 'implementation': impl.feed.get_name(), 'version': impl.get_version()})
+ 
+diff --git a/zeroinstall/injector/model.py b/zeroinstall/injector/model.py
+index e2f03d5..ed88856 100644
+--- a/zeroinstall/injector/model.py
++++ b/zeroinstall/injector/model.py
+@@ -420,6 +420,26 @@ class Implementation(object):
+ 		"""
+ 		return format_version(self.version)
+ 
++	def get_algorithm(self):
++		x = self.id.split('=')
++		if len(x) < 2:
++			return None
++		else:
++			return x[0]
++
++	def get_package_id(self):
++		x = self.id.split(':')
++		if len(x) < 3:
++			return None
++		else:
++			return x[2]
++
++	def is_local(self):
++		return self.id.startswith('/')
++
++	def is_package(self):
++		return self.id.startswith('package:')
++
+ 	arch = property(lambda self: _join_arch(self.os, self.machine))
+ 
+ 	os = None
+@@ -428,12 +448,14 @@ class DistributionImplementation(Implementation):
+ 	"""An implementation provided by the distribution. Information such as the version
+ 	comes from the package manager.
+ 	@since: 0.28"""
+-	__slots__ = ['installed']
++	__slots__ = ['installed', 'os', 'size']
+ 
+ 	def __init__(self, feed, id):
+ 		assert id.startswith('package:')
+ 		Implementation.__init__(self, feed, id)
+ 		self.installed = True
++		self.size = None
++		self.os = None
+ 	
+ class ZeroInstallImplementation(Implementation):
+ 	"""An implementation where all the information comes from Zero Install.
+diff --git a/zeroinstall/injector/run.py b/zeroinstall/injector/run.py
+index 9c578fc..9163571 100644
+--- a/zeroinstall/injector/run.py
++++ b/zeroinstall/injector/run.py
+@@ -83,7 +83,7 @@ def execute_selections(selections, prog_args, dry_run = False, main = None, wrap
+ 		_do_bindings(selection, selection.bindings)
+ 		for dep in selection.dependencies:
+ 			dep_impl = sels[dep.interface]
+-			if not dep_impl.id.startswith('package:'):
++			if not dep_impl.is_package():
+ 				_do_bindings(dep_impl, dep.bindings)
+ 	
+ 	root_impl = sels[selections.interface]
+@@ -131,7 +131,7 @@ def test_selections(selections, prog_args, dry_run, main, wrapper = None):
+ def _execute(root_impl, prog_args, dry_run, main, wrapper):
+ 	assert root_impl is not None
+ 
+-	if root_impl.id.startswith('package:'):
++	if root_impl.is_package():
+ 		main = main or root_impl.main
+ 		prog_path = main
+ 	else:
+diff --git a/zeroinstall/injector/selections.py b/zeroinstall/injector/selections.py
+index 76b040d..b35970c 100644
+--- a/zeroinstall/injector/selections.py
++++ b/zeroinstall/injector/selections.py
+@@ -40,6 +40,9 @@ class Selection(object):
+ 	feed = property(lambda self: self.attrs.get('from-feed', self.interface))
+ 	main = property(lambda self: self.attrs.get('main', None))
+ 
++	def is_package(self):
++		return self.id.startswith('package:')
++
+ 	def __repr__(self):
+ 		return self.id
+ 
+-- 
+1.6.5.3
+
+
+From f1ce0e5fc1399287151179fd5a7c70c4c132e79f Mon Sep 17 00:00:00 2001
+From: Aleksey Lim <alsroot@member.fsf.org>
+Date: Fri, 4 Dec 2009 01:45:02 +0000
+Subject: Postpone fetching native versions in first solve and complete it asynchronously in solve_and_download phase
+
+
+diff --git a/zeroinstall/injector/model.py b/zeroinstall/injector/model.py
+index ed88856..8b522b9 100644
+--- a/zeroinstall/injector/model.py
++++ b/zeroinstall/injector/model.py
+@@ -496,6 +496,7 @@ class Interface(object):
+ 	last_modified = property(lambda self: self._main_feed.last_modified)
+ 	feeds = property(lambda self: self.extra_feeds + self._main_feed.feeds)
+ 	metadata = property(lambda self: self._main_feed.metadata)
++	postponed = property(lambda self: self._main_feed.postponed)
+ 
+ 	last_checked = property(lambda self: self._main_feed.last_checked)
+ 
+@@ -579,7 +580,8 @@ class ZeroInstallFeed(object):
+ 	"""
+ 	# _main is deprecated
+ 	__slots__ = ['url', 'implementations', 'name', 'description', 'summary',
+-		     'last_checked', 'last_modified', 'feeds', 'feed_for', 'metadata']
++		     'last_checked', 'last_modified', 'feeds', 'feed_for', 'metadata',
++			'postponed']
+ 
+ 	def __init__(self, feed_element, local_path = None, distro = None):
+ 		"""Create a feed object from a DOM.
+@@ -598,6 +600,7 @@ class ZeroInstallFeed(object):
+ 		self.feed_for = set()
+ 		self.metadata = []
+ 		self.last_checked = None
++		self.postponed = []
+ 
+ 		assert feed_element.name in ('interface', 'feed'), "Root element should be <interface>, not %s" % feed_element
+ 		assert feed_element.uri == XMLNS_IFACE, "Wrong namespace on root element: %s" % feed_element.uri
+@@ -800,7 +803,7 @@ class ZeroInstallFeed(object):
+ 
+ 				return impl
+ 
+-			distro.get_package_info(package, factory)
++			self.postponed = distro.get_package_info(package, factory) or []
+ 		
+ 		root_attrs = {'stability': 'testing'}
+ 		if main:
+diff --git a/zeroinstall/injector/policy.py b/zeroinstall/injector/policy.py
+index 73180da..a8b7d51 100644
+--- a/zeroinstall/injector/policy.py
++++ b/zeroinstall/injector/policy.py
+@@ -319,6 +319,15 @@ class Policy(object):
+ 
+ 		while True:
+ 			self.solver.solve(self.root, host_arch)
++
++			postponed_feeds = []
++			for i in self.solver.feeds_used:
++				feed = iface_cache.get_interface(i)
++				postponed_feeds.extend(feed.postponed)
++			if postponed_feeds:
++				yield postponed_feeds
++				self.solver.solve(self.root, host_arch)
++
+ 			for w in self.watchers: w()
+ 
+ 			if self.solver.ready and not force:
+-- 
+1.6.5.3
+
+
+From b08fd63b3bbc47fcf6d74ab4bfcd644dda3381b5 Mon Sep 17 00:00:00 2001
+From: Aleksey Lim <alsroot@member.fsf.org>
+Date: Fri, 4 Dec 2009 01:48:12 +0000
+Subject: Download native sources separately
+
+
+diff --git a/zeroinstall/injector/fetch.py b/zeroinstall/injector/fetch.py
+index 60b9caa..4e74114 100644
+--- a/zeroinstall/injector/fetch.py
++++ b/zeroinstall/injector/fetch.py
+@@ -12,6 +12,7 @@ from logging import info, debug, warn
+ from zeroinstall.support import tasks, basedir
+ from zeroinstall.injector.namespaces import XMLNS_IFACE, config_site
+ from zeroinstall.injector.model import DownloadSource, Recipe, SafeException, escape
++from zeroinstall.injector.distro import PackageSource
+ from zeroinstall.injector.iface_cache import PendingFeed, ReplayAttack
+ from zeroinstall.injector.handler import NoTrustedKeys
+ from zeroinstall.injector import download
+@@ -314,6 +315,12 @@ class Fetcher(object):
+ 
+ 				stream.seek(0)
+ 				self._add_to_cache(stores, retrieval_method, stream)
++			elif isinstance(retrieval_method, PackageSource):
++				dl = self.handler.get_download(retrieval_method.url,
++						force=force, hint=impl,
++						factory=retrieval_method.download_factory)
++				yield dl.downloaded
++				tasks.check(dl.downloaded)
+ 			elif isinstance(retrieval_method, Recipe):
+ 				blocker = self.cook(impl.id, retrieval_method, stores, force, impl_hint = impl)
+ 				yield blocker
+diff --git a/zeroinstall/injector/handler.py b/zeroinstall/injector/handler.py
+index 8055855..0586231 100644
+--- a/zeroinstall/injector/handler.py
++++ b/zeroinstall/injector/handler.py
+@@ -102,7 +102,7 @@ class Handler(object):
+ 
+ 		tasks.check(blocker)
+ 	
+-	def get_download(self, url, force = False, hint = None):
++	def get_download(self, url, force = False, hint = None, factory = None):
+ 		"""Return the Download object currently downloading 'url'.
+ 		If no download for this URL has been started, start one now (and
+ 		start monitoring it).
+@@ -120,7 +120,10 @@ class Handler(object):
+ 				dl.abort()
+ 				raise KeyError
+ 		except KeyError:
+-			dl = download.Download(url, hint)
++			if factory is None:
++				dl = download.Download(url, hint)
++			else:
++				dl = factory(url, hint)
+ 			self.monitor_download(dl)
+ 		return dl
+ 
+-- 
+1.6.5.3
+
+
+From 4f52ddb66375cda3826ca4022024b5eb11295b42 Mon Sep 17 00:00:00 2001
+From: Aleksey Lim <alsroot@member.fsf.org>
+Date: Fri, 4 Dec 2009 01:53:00 +0000
+Subject: Initial implementation of PackageKit integration
+
+
+diff --git a/zeroinstall/injector/distro.py b/zeroinstall/injector/distro.py
+index e7b96c8..c85623e 100644
+--- a/zeroinstall/injector/distro.py
++++ b/zeroinstall/injector/distro.py
+@@ -7,10 +7,17 @@ Integration with native distribution package managers.
+ # See the README file for details, or visit http://0install.net.
+ 
+ from zeroinstall import _
+-import os, re
+-from logging import warn, info
++import os, re, pickle, time
++import locale
++import dbus
++import dbus.mainloop.glib
++from logging import debug, warn, info
+ from zeroinstall.injector import namespaces, model
+-from zeroinstall.support import basedir
++from zeroinstall.injector import download
++from zeroinstall.injector.model import RetrievalMethod
++from zeroinstall.support import tasks, basedir
++
++dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
+ 
+ _dotted_ints = '[0-9]+(\.[0-9]+)*'
+ _version_regexp = '(%s)(-(pre|rc|post|)%s)*' % (_dotted_ints, _dotted_ints)
+@@ -194,12 +201,273 @@ class RPMDistribution(CachedDistribution):
+ 			if machine != '*':
+ 				impl.machine = machine
+ 
++class PackageSource(RetrievalMethod):
++    __slots__ = ['url', 'size']
++
++    def __init__(self, url, size):
++        RetrievalMethod.__init__(self)
++        self.url = url
++        self.size = size
++
++    def download_factory(self, url, hint):
++        return PackageDownload(url, hint)
++
++class PackageDownload(download.Download):
++    def __init__(self, url, hint=None):
++        download.Download.__init__(self, url, hint)
++
++        self.expected_size = hint.size
++        self._transaction = None
++
++    def start(self):
++        assert self.status == download.download_starting
++        assert self.downloaded is None
++
++        def error_cb(sender):
++            self.abort()
++
++        def installed_cb(sender):
++            for url, impl in self.hint.feed.implementations.items():
++                if id(impl) != id(self.hint):
++                    impl.installed = False
++            self.hint.installed = True
++            self.status = download.download_complete
++            self.downloaded.trigger()
++
++        def install_packages():
++            self._transaction = _PackageKitTransaction(installed_cb, error_cb)
++            self._transaction.compat_call('InstallPackages',
++                    [[[self.hint.get_package_id()]],
++                     [False, [self.hint.get_package_id()]]])
++
++        _auth_wrapper(install_packages)
++
++        self.status = download.download_fetching
++        self.downloaded = tasks.Blocker('PackageKit install %s' % self.hint.id)
++
++    def abort(self):
++        debug(_('Cancel PackageKit transaction'))
++        self._transaction.proxy.Cancel()
++        self.status = download.download_failed
++        self.downloaded.trigger()
++
++    def get_current_fraction(self):
++        if self._transaction is None:
++            return None
++        (percentage, subpercentage_, elapsed_, remaining_) = \
++                self._transaction.proxy.GetProgress()
++        if percentage > 100:
++            return None
++        else:
++            return float(percentage) / 100.
++
++    def get_bytes_downloaded_so_far(self):
++        fraction = self.get_current_fraction()
++        if fraction is None:
++            return 0
++        else:
++            return int(self.expected_size * fraction)
++
++class PackageKitDistribution(Distribution):
++    def __init__(self):
++        Distribution.__init__(self)
++
++        self.pk = dbus.Interface(
++                dbus.SystemBus().get_object('org.freedesktop.PackageKit',
++                    '/org/freedesktop/PackageKit', False),
++                'org.freedesktop.PackageKit')
++
++        self._cache_dir = basedir.save_cache_path(namespaces.config_site,
++                namespaces.config_prog)
++        self._pending_transactions = {}
++
++    def get_package_info(self, package, factory):
++        cache_file = os.path.join(self._cache_dir,
++                model.escape(package) + '.packagekit.cache')
++        blockers = []
++        versions = {}
++
++        def register_versions():
++            for id, info in versions.items():
++                arch = os.uname()[-1]
++                impl = factory('package:PackageKit:%s:%s:%s' % \
++                        (id, info['version'], arch))
++                impl.version = model.parse_version(info['version'])
++                impl.machine = arch
++                impl.installed = info['installed']
++                impl.size = info['size']
++
++                if not impl.installed:
++                    source = PackageSource(package, info['size'])
++                    impl.download_sources.append(source)
++
++                from zeroinstall.injector import reader
++                from zeroinstall.injector.iface_cache import iface_cache
++                interface = iface_cache.get_interface(impl.feed.url)
++                reader.update_user_overrides(interface, impl.feed)
++
++        def error_cb(sender):
++            if package not in self._pending_transactions[package]:
++                return
++            if os.path.exists(cache_file):
++                os.unlink(cache_file)
++            del self._pending_transactions[package]
++            blockers[0].trigger()
++
++        def details_cb(sender):
++            if not sender.details:
++                warn(_('Empty PackageKit details for %s'), package)
++                error_cb(sender)
++                return
++
++            for key, value in sender.details.items():
++                versions[key].update(value)
++
++            stream = file(cache_file, 'w')
++            stream.write(pickle.dumps(versions))
++            stream.close()
++
++            register_versions()
++
++            del self._pending_transactions[package]
++            blockers[0].trigger()
++
++        def resolve_cb(sender):
++            if not sender.package:
++                warn(_('Empty PackageKit resolve for %s'), package)
++                error_cb(sender)
++                return
++
++            versions.update(sender.package)
++            tran = _PackageKitTransaction(details_cb, error_cb)
++            tran.proxy.GetDetails(sender.package.keys())
++
++        def resolve():
++            debug(_('Ask PackageKit for %s'), package)
++            blockers.append(tasks.Blocker('PackageKit resolve %s' % package))
++            self._pending_transactions[package] = blockers
++            tran = _PackageKitTransaction(resolve_cb, error_cb)
++            tran.proxy.Resolve('none', [package])
++            return blockers
++
++        if not os.path.exists(cache_file) or \
++                os.stat(cache_file).st_mtime < self._get_last_update():
++            return self._pending_transactions.get(package) or resolve()
++
++        try:
++            versions = pickle.loads(file(cache_file).read())
++        except Exception, e:
++            warn(_('PackageKit cache read failed: %r'), e)
++            return resolve()
++
++        register_versions()
++
++    def _get_last_update(self):
++        ts = int(time.time())
++        since = ts
++        for role in ['update-system', 'update-packages', 'refresh-cache',
++                     'install-packages', 'remove-packages']:
++            since = min(since, self.pk.GetTimeSinceAction(role))
++        return ts - since
++
++class _PackageKitTransaction(object):
++    def __init__(self, finished_cb=None, error_cb=None):
++        tid = get_host_distribution().pk.GetTid()
++
++        self._finished_cb = finished_cb
++        self._error_cb = error_cb
++        self.package = {}
++        self.details = {}
++
++        self.object = dbus.SystemBus().get_object(
++                'org.freedesktop.PackageKit', tid, False)
++        self.proxy = dbus.Interface(self.object,
++                'org.freedesktop.PackageKit.Transaction')
++
++        for signal, cb in [('Finished', self.__finished_cb),
++                           ('ErrorCode', self.__error_code_cb),
++                           ('StatusChanged', self.__status_changed_cb),
++                           ('Package', self.__package_cb),
++                           ('Details', self.__details_cb)]:
++            self.proxy.connect_to_signal(signal, cb)
++
++        self.proxy.SetLocale(locale.getdefaultlocale()[0])
++
++    def compat_call(self, method, arg_sets):
++        dbus_method = self.proxy.get_dbus_method(method)
++        for args in arg_sets:
++            try:
++                return dbus_method(*args)
++            except dbus.exceptions.DBusException, e:
++                if e.get_dbus_name() != \
++                        'org.freedesktop.DBus.Error.UnknownMethod':
++                    raise
++        raise
++
++    def __finished_cb(self, exit, runtime):
++        debug(_('PackageKit transaction finished: %s'), exit)
++        self._finished_cb(self)
++
++    def __error_code_cb(self, code, details):
++        warn(_('PackageKit transaction failed: %s(%s)'), details, code)
++        self._error_cb(self)
++
++    def __package_cb(self, status, id, summary):
++        package_, version, arch_, repo_ = id.split(';')
++        package = {'version': version,
++                   'installed': (status == 'installed')}
++        debug(_('PackageKit package: %s %r'), id, package)
++        self.package[str(id)] = package
++
++    def __details_cb(self, id, licence, group, detail, url, size):
++        details = {'licence': str(licence),
++                   'group': str(group),
++                   'detail': str(detail),
++                   'url': str(url),
++                   'size': long(size)}
++        debug(_('PackageKit details: %s %r'), id, details)
++        self.details[id] = details
++
++    def __status_changed_cb(self, status):
++        pass
++
++def _auth_wrapper(method, *args):
++    try:
++        return method(*args)
++    except dbus.exceptions.DBusException, e:
++        if e.get_dbus_name() != \
++                'org.freedesktop.PackageKit.Transaction.RefusedByPolicy':
++            raise
++
++        iface, auth = e.get_dbus_message().split()
++        if not auth.startswith('auth_'):
++            raise
++
++        debug(_('PackageKit authentication required for %s'), auth)
++
++        pk_auth = dbus.SessionBus().get_object(
++                'org.freedesktop.PolicyKit.AuthenticationAgent', '/',
++                'org.gnome.PolicyKit.AuthorizationManager.SingleInstance')
++
++        if not pk_auth.ObtainAuthorization(iface, dbus.UInt32(0),
++                dbus.UInt32(os.getpid()), timeout=300):
++            raise
++
++        return method(*args)
++
+ _host_distribution = None
+ def get_host_distribution():
+ 	"""Get a Distribution suitable for the host operating system.
+ 	Calling this twice will return the same object.
+ 	@rtype: L{Distribution}"""
+ 	global _host_distribution
++
++	if not _host_distribution:
++		try:
++			_host_distribution = PackageKitDistribution()
++		except Exception, e:
++			info('Do not use PackageKit: %s', e)
++
+ 	if not _host_distribution:
+ 		_dpkg_db_status = '/var/lib/dpkg/status'
+ 		_rpm_db = '/var/lib/rpm/Packages'
+-- 
+1.6.5.3
+
+
+From b0ea381ca6fe29cff2611b52f1d57463b6800fa1 Mon Sep 17 00:00:00 2001
+From: Aleksey Lim <alsroot@member.fsf.org>
+Date: Tue, 15 Dec 2009 08:05:01 +0000
+Subject: Double-check PackageKit for installed packages
+
+
+diff --git a/zeroinstall/injector/distro.py b/zeroinstall/injector/distro.py
+index c85623e..c4a29c7 100644
+--- a/zeroinstall/injector/distro.py
++++ b/zeroinstall/injector/distro.py
+@@ -281,12 +281,30 @@ class PackageKitDistribution(Distribution):
+                 namespaces.config_prog)
+         self._pending_transactions = {}
+ 
+-    def get_package_info(self, package, factory):
++    def get_package_info(self, package_name, factory):
+         cache_file = os.path.join(self._cache_dir,
+-                model.escape(package) + '.packagekit.cache')
++                model.escape(package_name) + '.packagekit.cache')
+         blockers = []
+         versions = {}
+ 
++        def apply_cb():
++            stream = file(cache_file, 'w')
++            stream.write(pickle.dumps(versions))
++            stream.close()
++
++            register_versions()
++
++            del self._pending_transactions[package_name]
++            blockers[0].trigger()
++
++        def error_cb(sender):
++            if package_name not in self._pending_transactions:
++                return
++            if os.path.exists(cache_file):
++                os.unlink(cache_file)
++            del self._pending_transactions[package_name]
++            blockers[0].trigger()
++
+         def register_versions():
+             for id, info in versions.items():
+                 arch = os.uname()[-1]
+@@ -298,7 +316,7 @@ class PackageKitDistribution(Distribution):
+                 impl.size = info['size']
+ 
+                 if not impl.installed:
+-                    source = PackageSource(package, info['size'])
++                    source = PackageSource(package_name, info['size'])
+                     impl.download_sources.append(source)
+ 
+                 from zeroinstall.injector import reader
+@@ -306,53 +324,65 @@ class PackageKitDistribution(Distribution):
+                 interface = iface_cache.get_interface(impl.feed.url)
+                 reader.update_user_overrides(interface, impl.feed)
+ 
+-        def error_cb(sender):
+-            if package not in self._pending_transactions[package]:
+-                return
+-            if os.path.exists(cache_file):
+-                os.unlink(cache_file)
+-            del self._pending_transactions[package]
+-            blockers[0].trigger()
++        # unfortunately we can't absolutely rely on PackageKit
++        # packages could be uninstalled w/o pk thus we need to track such
++        # uninstalling by checking existance and mtime of marker files
++        def files_cb(sender):
++            for id, files in sender.files.items():
++                for filename in files:
++                    # do not relly on existance of files in directories
++                    # like /etc /var etc. that could present after
++                    # uninstalling package
++                    if os.path.isfile(filename) and \
++                            (filename.startswith(os.path.sep + 'usr') or \
++                            filename.startswith(os.path.sep + 'opt')):
++                        versions[id]['marker_file'] = filename
++                        versions[id]['marker_mtime'] = \
++                                os.stat(filename).st_mtime
++                        break
++            apply_cb()
+ 
+         def details_cb(sender):
+             if not sender.details:
+-                warn(_('Empty PackageKit details for %s'), package)
++                warn(_('Empty PackageKit details for %s'), package_name)
+                 error_cb(sender)
+                 return
+ 
+-            for key, value in sender.details.items():
+-                versions[key].update(value)
+-
+-            stream = file(cache_file, 'w')
+-            stream.write(pickle.dumps(versions))
+-            stream.close()
++            files_request = []
+ 
+-            register_versions()
++            for id, value in sender.details.items():
++                versions[id].update(value)
++                if versions[id]['installed']:
++                    files_request.append(id)
+ 
+-            del self._pending_transactions[package]
+-            blockers[0].trigger()
++            if files_request:
++                tran = _PackageKitTransaction(files_cb, error_cb)
++                tran.proxy.GetFiles(files_request)
++            else:
++                apply_cb()
+ 
+         def resolve_cb(sender):
+             if not sender.package:
+-                warn(_('Empty PackageKit resolve for %s'), package)
++                warn(_('Empty PackageKit resolve for %s'), package_name)
+                 error_cb(sender)
+                 return
+ 
+             versions.update(sender.package)
++
+             tran = _PackageKitTransaction(details_cb, error_cb)
+-            tran.proxy.GetDetails(sender.package.keys())
++            tran.proxy.GetDetails(versions.keys())
+ 
+         def resolve():
+-            debug(_('Ask PackageKit for %s'), package)
+-            blockers.append(tasks.Blocker('PackageKit resolve %s' % package))
+-            self._pending_transactions[package] = blockers
++            debug(_('Ask PackageKit for %s'), package_name)
++            blockers.append(tasks.Blocker('PackageKit %s' % package_name))
++            self._pending_transactions[package_name] = blockers
+             tran = _PackageKitTransaction(resolve_cb, error_cb)
+-            tran.proxy.Resolve('none', [package])
++            tran.proxy.Resolve('none', [package_name])
+             return blockers
+ 
+         if not os.path.exists(cache_file) or \
+                 os.stat(cache_file).st_mtime < self._get_last_update():
+-            return self._pending_transactions.get(package) or resolve()
++            return self._pending_transactions.get(package_name) or resolve()
+ 
+         try:
+             versions = pickle.loads(file(cache_file).read())
+@@ -360,6 +390,24 @@ class PackageKitDistribution(Distribution):
+             warn(_('PackageKit cache read failed: %r'), e)
+             return resolve()
+ 
++        for id, info in versions.items():
++            if not info['installed']:
++                continue
++            elif 'marker_file' not in info:
++                debug(_('Marker file of %s is not tracked, ' \
++                        "let's hope package still exists"), id)
++                continue
++            elif not os.path.exists(info['marker_file']):
++                debug(_('Marker file %s of %s was deleted'),
++                        id, info['marker_file'])
++                versions = {}
++                return resolve()
++            elif os.stat(info['marker_file']).st_mtime != info['marker_mtime']:
++                debug(_('Marker file %s of %s was changed'),
++                        id, info['marker_file'])
++                versions = {}
++                return resolve()
++
+         register_versions()
+ 
+     def _get_last_update(self):
+@@ -378,6 +426,7 @@ class _PackageKitTransaction(object):
+         self._error_cb = error_cb
+         self.package = {}
+         self.details = {}
++        self.files = {}
+ 
+         self.object = dbus.SystemBus().get_object(
+                 'org.freedesktop.PackageKit', tid, False)
+@@ -388,7 +437,8 @@ class _PackageKitTransaction(object):
+                            ('ErrorCode', self.__error_code_cb),
+                            ('StatusChanged', self.__status_changed_cb),
+                            ('Package', self.__package_cb),
+-                           ('Details', self.__details_cb)]:
++                           ('Details', self.__details_cb),
++                           ('Files', self.__files_cb)]:
+             self.proxy.connect_to_signal(signal, cb)
+ 
+         self.proxy.SetLocale(locale.getdefaultlocale()[0])
+@@ -428,6 +478,9 @@ class _PackageKitTransaction(object):
+         debug(_('PackageKit details: %s %r'), id, details)
+         self.details[id] = details
+ 
++    def __files_cb(self, id, files):
++        self.files[id] = files.split(';')
++
+     def __status_changed_cb(self, status):
+         pass
+ 
+-- 
+1.6.5.3
+
+
+From e256cd89d8a4d84459b5915317bcd228c5b78c11 Mon Sep 17 00:00:00 2001
+From: Aleksey Lim <alsroot@member.fsf.org>
+Date: Tue, 15 Dec 2009 08:51:16 +0000
+Subject: Isolate PackageKit logger
+
+
+diff --git a/zeroinstall/injector/distro.py b/zeroinstall/injector/distro.py
+index c4a29c7..0ed7459 100644
+--- a/zeroinstall/injector/distro.py
++++ b/zeroinstall/injector/distro.py
+@@ -11,6 +11,7 @@ import os, re, pickle, time
+ import locale
+ import dbus
+ import dbus.mainloop.glib
++import logging
+ from logging import debug, warn, info
+ from zeroinstall.injector import namespaces, model
+ from zeroinstall.injector import download
+@@ -22,6 +23,8 @@ dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
+ _dotted_ints = '[0-9]+(\.[0-9]+)*'
+ _version_regexp = '(%s)(-(pre|rc|post|)%s)*' % (_dotted_ints, _dotted_ints)
+ 
++logger_pk = logging.getLogger('packagekit')
++
+ def try_cleanup_distro_version(version):
+ 	"""Try to turn a distribution version string into one readable by Zero Install.
+ 	We do this by stripping off anything we can't parse.
+@@ -246,7 +249,7 @@ class PackageDownload(download.Download):
+         self.downloaded = tasks.Blocker('PackageKit install %s' % self.hint.id)
+ 
+     def abort(self):
+-        debug(_('Cancel PackageKit transaction'))
++        logger_pk.debug(_('Cancel transaction'))
+         self._transaction.proxy.Cancel()
+         self.status = download.download_failed
+         self.downloaded.trigger()
+@@ -306,6 +309,8 @@ class PackageKitDistribution(Distribution):
+             blockers[0].trigger()
+ 
+         def register_versions():
++            logger_pk.debug(_('Versions for %s are %r'), package_name, versions)
++
+             for id, info in versions.items():
+                 arch = os.uname()[-1]
+                 impl = factory('package:PackageKit:%s:%s:%s' % \
+@@ -344,7 +349,7 @@ class PackageKitDistribution(Distribution):
+ 
+         def details_cb(sender):
+             if not sender.details:
+-                warn(_('Empty PackageKit details for %s'), package_name)
++                logger_pk.warn(_('Empty details for %s'), package_name)
+                 error_cb(sender)
+                 return
+ 
+@@ -363,7 +368,7 @@ class PackageKitDistribution(Distribution):
+ 
+         def resolve_cb(sender):
+             if not sender.package:
+-                warn(_('Empty PackageKit resolve for %s'), package_name)
++                logger_pk.warn(_('Empty resolve for %s'), package_name)
+                 error_cb(sender)
+                 return
+ 
+@@ -373,7 +378,7 @@ class PackageKitDistribution(Distribution):
+             tran.proxy.GetDetails(versions.keys())
+ 
+         def resolve():
+-            debug(_('Ask PackageKit for %s'), package_name)
++            logger_pk.debug(_('Ask for %s'), package_name)
+             blockers.append(tasks.Blocker('PackageKit %s' % package_name))
+             self._pending_transactions[package_name] = blockers
+             tran = _PackageKitTransaction(resolve_cb, error_cb)
+@@ -387,23 +392,23 @@ class PackageKitDistribution(Distribution):
+         try:
+             versions = pickle.loads(file(cache_file).read())
+         except Exception, e:
+-            warn(_('PackageKit cache read failed: %r'), e)
++            logger_pk.warn(_('Cache read failed: %r'), e)
+             return resolve()
+ 
+         for id, info in versions.items():
+             if not info['installed']:
+                 continue
+             elif 'marker_file' not in info:
+-                debug(_('Marker file of %s is not tracked, ' \
++                logger_pk.debug(_('Marker file of %s is not tracked, ' \
+                         "let's hope package still exists"), id)
+                 continue
+             elif not os.path.exists(info['marker_file']):
+-                debug(_('Marker file %s of %s was deleted'),
++                logger_pk.debug(_('Marker file %s of %s was deleted'),
+                         id, info['marker_file'])
+                 versions = {}
+                 return resolve()
+             elif os.stat(info['marker_file']).st_mtime != info['marker_mtime']:
+-                debug(_('Marker file %s of %s was changed'),
++                logger_pk.debug(_('Marker file %s of %s was changed'),
+                         id, info['marker_file'])
+                 versions = {}
+                 return resolve()
+@@ -455,18 +460,18 @@ class _PackageKitTransaction(object):
+         raise
+ 
+     def __finished_cb(self, exit, runtime):
+-        debug(_('PackageKit transaction finished: %s'), exit)
++        logger_pk.debug(_('Transaction finished: %s'), exit)
+         self._finished_cb(self)
+ 
+     def __error_code_cb(self, code, details):
+-        warn(_('PackageKit transaction failed: %s(%s)'), details, code)
++        logger_pk.warn(_('Transaction failed: %s(%s)'), details, code)
+         self._error_cb(self)
+ 
+     def __package_cb(self, status, id, summary):
+         package_, version, arch_, repo_ = id.split(';')
+         package = {'version': version,
+                    'installed': (status == 'installed')}
+-        debug(_('PackageKit package: %s %r'), id, package)
++        logger_pk.debug(_('Package: %s %r'), id, package)
+         self.package[str(id)] = package
+ 
+     def __details_cb(self, id, licence, group, detail, url, size):
+@@ -475,7 +480,7 @@ class _PackageKitTransaction(object):
+                    'detail': str(detail),
+                    'url': str(url),
+                    'size': long(size)}
+-        debug(_('PackageKit details: %s %r'), id, details)
++        logger_pk.debug(_('Details: %s %r'), id, details)
+         self.details[id] = details
+ 
+     def __files_cb(self, id, files):
+@@ -496,7 +501,7 @@ def _auth_wrapper(method, *args):
+         if not auth.startswith('auth_'):
+             raise
+ 
+-        debug(_('PackageKit authentication required for %s'), auth)
++        logger_pk.debug(_('Authentication required for %s'), auth)
+ 
+         pk_auth = dbus.SessionBus().get_object(
+                 'org.freedesktop.PolicyKit.AuthenticationAgent', '/',
+-- 
+1.6.5.3
+
+
+From 5e209a49fc8867379d80cf5b514a59485760a82b Mon Sep 17 00:00:00 2001
+From: Aleksey Lim <alsroot@member.fsf.org>
+Date: Sat, 19 Dec 2009 12:36:34 +0000
+Subject: Do not fail while process dummy feed class
+
+
+diff --git a/zeroinstall/injector/model.py b/zeroinstall/injector/model.py
+index 8b522b9..f353de6 100644
+--- a/zeroinstall/injector/model.py
++++ b/zeroinstall/injector/model.py
+@@ -851,6 +851,7 @@ class DummyFeed(object):
+ 	feeds = property(lambda self: [])
+ 	summary = property(lambda self: '-')
+ 	description = property(lambda self: '')
++	postponed = property(lambda self: [])
+ 	def get_name(self): return self.name
+ 	def get_feed(self, url): return None
+ 	def get_metadata(self, uri, name): return []
+-- 
+1.6.5.3
+
+
+From 3fa4c0c25d471dd7bd03c0fe91dd5ab7f4b9c038 Mon Sep 17 00:00:00 2001
+From: Aleksey Lim <alsroot@member.fsf.org>
+Date: Mon, 21 Dec 2009 23:32:02 +0000
+Subject: Use fedora's gpg2 command
+
+
+diff --git a/zeroinstall/injector/gpg.py b/zeroinstall/injector/gpg.py
+index 08bd619..38a5580 100644
+--- a/zeroinstall/injector/gpg.py
++++ b/zeroinstall/injector/gpg.py
+@@ -20,7 +20,8 @@ from zeroinstall.support import find_in_path, basedir
+ from zeroinstall.injector.trust import trust_db
+ from zeroinstall.injector.model import SafeException
+ 
+-_gnupg_options = ['gpg', '--no-secmem-warning']
++_gnupg_command = None
++_gnupg_options = ['--no-secmem-warning']
+ if hasattr(os, 'geteuid') and os.geteuid() == 0 and 'GNUPGHOME' not in os.environ:
+ 	_gnupg_options += ['--homedir', os.path.join(basedir.home, '.gnupg')]
+ 	info(_("Running as root, so setting GnuPG home to %s"), _gnupg_options[-1])
+@@ -61,7 +62,7 @@ class ValidSig(Signature):
+ 	def get_details(self):
+ 		"""Call 'gpg --list-keys' and return the results split into lines and columns.
+ 		@rtype: [[str]]"""
+-		child = subprocess.Popen(_gnupg_options + ['--with-colons', '--list-keys', self.fingerprint], stdout = subprocess.PIPE)
++		child = _call_gpg(['--with-colons', '--list-keys', self.fingerprint], stdout = subprocess.PIPE)
+ 		cout, unused = child.communicate()
+ 		if child.returncode:
+ 			info(_("GPG exited with code %d") % child.returncode)
+@@ -134,7 +135,7 @@ def load_keys(fingerprints):
+ 	current_fpr = None
+ 	current_uid = None
+ 
+-	child = subprocess.Popen(_gnupg_options + ['--fixed-list-mode', '--with-colons', '--list-keys',
++	child = _call_gpg(['--fixed-list-mode', '--with-colons', '--list-keys',
+ 				'--with-fingerprint', '--with-fingerprint'] + fingerprints, stdout = subprocess.PIPE)
+ 	try:
+ 		for line in child.stdout:
+@@ -173,7 +174,7 @@ def import_key(stream):
+ 	"""Run C{gpg --import} with this stream as stdin."""
+ 	errors = tempfile.TemporaryFile()
+ 
+-	child = subprocess.Popen(_gnupg_options + ['--quiet', '--import', '--batch'],
++	child = _call_gpg(['--quiet', '--import', '--batch'],
+ 				stdin = stream, stderr = errors)
+ 
+ 	status = child.wait()
+@@ -197,7 +198,7 @@ def _check_plain_stream(stream):
+ 	status_r, status_w = os.pipe()
+ 
+ 	# Note: Should ideally close status_r in the child, but we want to support Windows too
+-	child = subprocess.Popen(_gnupg_options + ['--decrypt',
++	child = _call_gpg(['--decrypt',
+ 					   # Not all versions support this:
+ 					   #'--max-output', str(1024 * 1024),
+ 					   '--batch',
+@@ -254,7 +255,7 @@ def _check_xml_stream(stream):
+ 		sig_file.close()
+ 
+ 		# Note: Should ideally close status_r in the child, but we want to support Windows too
+-		child = subprocess.Popen(_gnupg_options + [
++		child = _call_gpg([
+ 						   # Not all versions support this:
+ 						   #'--max-output', str(1024 * 1024),
+ 						   '--batch',
+@@ -281,8 +282,6 @@ def check_stream(stream):
+ 	data is the original stream). stream must be seekable.
+ 	@note: Stream returned may or may not be the one passed in. Be careful!
+ 	@return: (data_stream, [Signatures])"""
+-	if not find_in_path('gpg'):
+-		raise SafeException(_("GnuPG is not installed ('gpg' not in $PATH). See http://gnupg.org"))
+ 
+ 	#stream.seek(0)
+ 	#all = stream.read()
+@@ -338,3 +337,16 @@ def _get_sigs_from_gpg_status_stream(status_r, child, errors):
+ 			raise SafeException(_("No signatures found. No error messages from GPG."))
+ 	
+ 	return sigs
++
++def _call_gpg(args, **kwargs):
++    global _gnupg_command
++
++    if _gnupg_command is None:
++        if find_in_path('gpg'):
++            _gnupg_command = 'gpg'
++        elif find_in_path('gpg2'):
++            _gnupg_command = 'gpg2'
++        else:
++            raise OSError(_('Can not find gpg.'))
++
++    return subprocess.Popen([_gnupg_command] + _gnupg_options + args, **kwargs)
+-- 
+1.6.5.3
+
+
+From 027ba4630c30198b03544af4fccfa78f70255886 Mon Sep 17 00:00:00 2001
+From: Aleksey Lim <alsroot@member.fsf.org>
+Date: Tue, 22 Dec 2009 16:31:32 +0000
+Subject: Clean distro versions in PackageKit backend
+
+
+diff --git a/zeroinstall/injector/distro.py b/zeroinstall/injector/distro.py
+index 0ed7459..11ac286 100644
+--- a/zeroinstall/injector/distro.py
++++ b/zeroinstall/injector/distro.py
+@@ -469,7 +469,10 @@ class _PackageKitTransaction(object):
+ 
+     def __package_cb(self, status, id, summary):
+         package_, version, arch_, repo_ = id.split(';')
+-        package = {'version': version,
++        clean_version = try_cleanup_distro_version(version)
++        if not clean_version:
++            warn(_("Can't parse distribution version '%(version)s' for package '%(package)s'"), {'version': version, 'package': package})
++        package = {'version': clean_version,
+                    'installed': (status == 'installed')}
+         logger_pk.debug(_('Package: %s %r'), id, package)
+         self.package[str(id)] = package
+-- 
+1.6.5.3
+
+
+From 52da367afff8b70e89e9d58a3bef593a2fa37821 Mon Sep 17 00:00:00 2001
+From: Aleksey Lim <alsroot@member.fsf.org>
+Date: Tue, 22 Dec 2009 16:33:40 +0000
+Subject: Choose proper package-implementation using distro attribute
+
+
+diff --git a/zeroinstall/injector/distro.py b/zeroinstall/injector/distro.py
+index 11ac286..d05a4b2 100644
+--- a/zeroinstall/injector/distro.py
++++ b/zeroinstall/injector/distro.py
+@@ -12,6 +12,7 @@ import locale
+ import dbus
+ import dbus.mainloop.glib
+ import logging
++import glob
+ from logging import debug, warn, info
+ from zeroinstall.injector import namespaces, model
+ from zeroinstall.injector import download
+@@ -41,6 +42,8 @@ class Distribution(object):
+ 	particular distributions. This base class ignores the native package manager.
+ 	@since: 0.28
+ 	"""
++	def __init__(self):
++		self._name = None
+ 
+ 	def get_package_info(self, package, factory):
+ 		"""Get information about the given package.
+@@ -53,6 +56,26 @@ class Distribution(object):
+ 		"""
+ 		return
+ 
++	def get_name(self):
++		"""Get distribution name"""
++		if self._name is not None:
++			return self._name
++
++		for name, path in (('foresight', '/etc/distro-release'),
++                           ('debian', '/etc/debian_version'),
++                           ('fedora', '/etc/fedora-release'),
++                           ('mandriva', '/etc/mandriva-release')):
++			if os.path.exists(path):
++				self._name = name
++				break
++
++		if self._name is None:
++			release = glob.glob('/etc/*-release')
++			if release:
++				self._name = os.path.basename(release[0]).split('-')[0]
++
++		return self._name
++
+ class CachedDistribution(Distribution):
+ 	"""For distributions where querying the package database is slow (e.g. requires running
+ 	an external command), we cache the results.
+diff --git a/zeroinstall/injector/model.py b/zeroinstall/injector/model.py
+index f353de6..13668c0 100644
+--- a/zeroinstall/injector/model.py
++++ b/zeroinstall/injector/model.py
+@@ -660,6 +660,8 @@ class ZeroInstallFeed(object):
+ 		if not self.summary:
+ 			raise InvalidInterface(_("Missing <summary> in feed"))
+ 
++		package_impls = []
++
+ 		def process_group(group, group_attrs, base_depends, base_bindings):
+ 			for item in group.childNodes:
+ 				if item.uri != XMLNS_IFACE: continue
+@@ -691,7 +693,12 @@ class ZeroInstallFeed(object):
+ 				elif item.name == 'implementation':
+ 					process_impl(item, item_attrs, depends, bindings)
+ 				elif item.name == 'package-implementation':
+-					process_native_impl(item, item_attrs, depends)
++					distro_name = item_attrs.get('distro', None)
++					if distro_name is None and not package_impls or \
++							distro_name == distro.get_name():
++						while package_impls:
++							package_impls.pop()
++						package_impls.append((item, item_attrs, depends))
+ 				else:
+ 					assert 0
+ 
+@@ -810,6 +817,9 @@ class ZeroInstallFeed(object):
+ 			root_attrs['main'] = main
+ 		process_group(feed_element, root_attrs, [], [])
+ 
++		for i in package_impls:
++			process_native_impl(*i)
++
+ 	def get_name(self):
+ 		return self.name or '(' + os.path.basename(self.url) + ')'
+ 	
+-- 
+1.6.5.3
+
+
+From d312535b69a6d28d66e6791504d17ad7ba804d42 Mon Sep 17 00:00:00 2001
+From: Aleksey Lim <alsroot@member.fsf.org>
+Date: Tue, 22 Dec 2009 17:44:46 +0000
+Subject: Add tests for distro names
+
+
+diff --git a/tests/testdistro.py b/tests/testdistro.py
+index 8eadae5..eb483a6 100755
+--- a/tests/testdistro.py
++++ b/tests/testdistro.py
+@@ -4,13 +4,18 @@ import sys, os
+ import unittest
+ 
+ sys.path.insert(0, '..')
+-from zeroinstall.injector import distro, model
++from zeroinstall.injector import distro, model, autopolicy
++from zeroinstall.support import basedir
+ 
+ class TestDistro(BaseTest):
+ 	def setUp(self):
+ 		BaseTest.setUp(self)
+ 		self.feed = model.ZeroInstallFeed(empty_feed, local_path = '/empty.xml')
+ 
++		distro.RELEASE_FILES = [('distro', 'testdistro.py')]
++		distro._host_distribution = _Distribution()
++		assert distro.get_host_distribution().get_name() == 'distro'
++
+ 	def tearDown(self):	
+ 		BaseTest.tearDown(self)
+ 
+@@ -59,6 +64,67 @@ class TestDistro(BaseTest):
+ 		self.assertEquals('1', distro.try_cleanup_distro_version('1:0.3.1-1'))
+ 		self.assertEquals('0.3.1-1', distro.try_cleanup_distro_version('0.3.1-1ubuntu0'))
+ 
++	def testDistroName(self):
++		def get_impl(url, iface):
++			_cache_iface(url, iface)
++			policy = autopolicy.AutoPolicy(url, False, True)
++			policy.freshness = 0
++			policy.network_use = model.network_full
++			policy.recalculate()
++			return policy, policy.solver.selections.values()
++
++		policy, selections = get_impl('http://url1', """
++                <package-implementation version='1.0' distro="distro" package="p1" id='sha1=1'/>
++                <package-implementation version='1.0' distro="foo" package="p2" id='sha1=2'/>
++                """)
++		assert policy.ready
++		assert len(selections) == 1
++		assert selections[0].id == 'package:distro:p1:1'
++
++		policy, selections = get_impl('http://url2', """
++                <package-implementation version='1.0' package="p3" id='sha1=3'/>
++                <package-implementation version='1.0' distro="distro" package="p4" id='sha1=4'/>
++                """)
++		assert policy.ready
++		assert len(selections) == 1
++		assert selections[0].id == 'package:distro:p4:1'
++
++		policy, selections = get_impl('http://url3', """
++                <package-implementation version='1.0' package="p5" id='sha1=5'/>
++                <package-implementation version='1.0' distro="distro2" package="p6" id='sha1=6'/>
++                """)
++		assert policy.ready
++		assert len(selections) == 1
++		assert selections[0].id == 'package:distro:p5:1'
++
++		policy, selections = get_impl('http://url4', """
++                <package-implementation version='1.0' distro="distro3" package="p7" id='sha1=7'/>
++                <package-implementation version='1.0' distro="distro2" package="p8" id='sha1=8'/>
++                """)
++		assert not policy.ready
++
++
++class _Distribution(distro.Distribution):
++    def get_package_info(self, package, factory):
++        version = '1'
++        impl = factory('package:distro:%s:%s' % (package, version))
++        impl.version = model.parse_version(version)
++
++
++def _cache_iface(url, data):
++	cached_ifaces = basedir.save_cache_path('0install.net', 'interfaces')
++	f = file(os.path.join(cached_ifaces, model.escape(url)), 'w')
++	f.write("""<?xml version="1.0" ?>
++               <interface last-modified="0" uri="%s"
++                          xmlns="http://zero-install.sourceforge.net/2004/injector/interface">
++                   <name>Foo</name>
++                   <summary>Foo</summary>
++                   <description>Foo</description>""" % url)
++	f.write(data)
++	f.write("""</interface>""")
++	f.close()
++
++
+ suite = unittest.makeSuite(TestDistro)
+ if __name__ == '__main__':
+ 	sys.argv.append('-v')
+diff --git a/zeroinstall/injector/distro.py b/zeroinstall/injector/distro.py
+index d05a4b2..6ca42c1 100644
+--- a/zeroinstall/injector/distro.py
++++ b/zeroinstall/injector/distro.py
+@@ -24,6 +24,11 @@ dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
+ _dotted_ints = '[0-9]+(\.[0-9]+)*'
+ _version_regexp = '(%s)(-(pre|rc|post|)%s)*' % (_dotted_ints, _dotted_ints)
+ 
++RELEASE_FILES = [('foresight', '/etc/distro-release'),
++                 ('debian', '/etc/debian_version'),
++                 ('fedora', '/etc/fedora-release'),
++                 ('mandriva', '/etc/mandriva-release')]
++
+ logger_pk = logging.getLogger('packagekit')
+ 
+ def try_cleanup_distro_version(version):
+@@ -61,10 +66,7 @@ class Distribution(object):
+ 		if self._name is not None:
+ 			return self._name
+ 
+-		for name, path in (('foresight', '/etc/distro-release'),
+-                           ('debian', '/etc/debian_version'),
+-                           ('fedora', '/etc/fedora-release'),
+-                           ('mandriva', '/etc/mandriva-release')):
++		for name, path in RELEASE_FILES:
+ 			if os.path.exists(path):
+ 				self._name = name
+ 				break
+@@ -84,6 +86,7 @@ class CachedDistribution(Distribution):
+ 
+ 	def __init__(self, db_status_file):
+ 		"""@param db_status_file: update the cache when the timestamp of this file changes"""
++		Distribution.__init__(self)
+ 		self._status_details = os.stat(db_status_file)
+ 
+ 		self.versions = {}
+-- 
+1.6.5.3
+
+
+From 79484e3ce56b9696459b00f800891bfa92afce67 Mon Sep 17 00:00:00 2001
+From: Aleksey Lim <alsroot@member.fsf.org>
+Date: Sat, 26 Dec 2009 12:34:08 +0000
+Subject: Python ambiguity for "_" variable
+
+
+diff --git a/zeroinstall/injector/download.py b/zeroinstall/injector/download.py
+index b4e9fc0..5877d65 100644
+--- a/zeroinstall/injector/download.py
++++ b/zeroinstall/injector/download.py
+@@ -167,7 +167,7 @@ class Download(object):
+ 							'Received: %(size)d bytes') % {'url': self.url, 'expected_size': self.expected_size, 'size': size})
+ 		except:
+ 			self.status = download_failed
+-			_, ex, tb = sys.exc_info()
++			__, ex, tb = sys.exc_info()
+ 			self.downloaded.trigger(exception = (ex, tb))
+ 		else:
+ 			self.status = download_complete
+-- 
+1.6.5.3
+
+
+From 1f4fcd2801c090bc2f225d9b8315e7178ee06ce2 Mon Sep 17 00:00:00 2001
+From: Aleksey Lim <alsroot@member.fsf.org>
+Date: Tue, 29 Dec 2009 18:52:51 +0000
+Subject: Add primitive primal distro selector
+
+
+diff --git a/zeroinstall/injector/distro.py b/zeroinstall/injector/distro.py
+index 6ca42c1..53152ab 100644
+--- a/zeroinstall/injector/distro.py
++++ b/zeroinstall/injector/distro.py
+@@ -12,9 +12,8 @@ import locale
+ import dbus
+ import dbus.mainloop.glib
+ import logging
+-import glob
+ from logging import debug, warn, info
+-from zeroinstall.injector import namespaces, model
++from zeroinstall.injector import namespaces, model, distrowatch
+ from zeroinstall.injector import download
+ from zeroinstall.injector.model import RetrievalMethod
+ from zeroinstall.support import tasks, basedir
+@@ -24,11 +23,6 @@ dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
+ _dotted_ints = '[0-9]+(\.[0-9]+)*'
+ _version_regexp = '(%s)(-(pre|rc|post|)%s)*' % (_dotted_ints, _dotted_ints)
+ 
+-RELEASE_FILES = [('foresight', '/etc/distro-release'),
+-                 ('debian', '/etc/debian_version'),
+-                 ('fedora', '/etc/fedora-release'),
+-                 ('mandriva', '/etc/mandriva-release')]
+-
+ logger_pk = logging.getLogger('packagekit')
+ 
+ def try_cleanup_distro_version(version):
+@@ -63,19 +57,8 @@ class Distribution(object):
+ 
+ 	def get_name(self):
+ 		"""Get distribution name"""
+-		if self._name is not None:
+-			return self._name
+-
+-		for name, path in RELEASE_FILES:
+-			if os.path.exists(path):
+-				self._name = name
+-				break
+-
+ 		if self._name is None:
+-			release = glob.glob('/etc/*-release')
+-			if release:
+-				self._name = os.path.basename(release[0]).split('-')[0]
+-
++			self._name = distrowatch.get_name()
+ 		return self._name
+ 
+ class CachedDistribution(Distribution):
+diff --git a/zeroinstall/injector/distrowatch.py b/zeroinstall/injector/distrowatch.py
+new file mode 100644
+index 0000000..7d7a334
+--- /dev/null
++++ b/zeroinstall/injector/distrowatch.py
+@@ -0,0 +1,36 @@
++import os
++import glob
++
++
++RELEASE_FILES = [('foresight', '/etc/distro-release'),
++                 ('debian', '/etc/debian_version'),
++                 # some distros have bunch of /etc/*-release files
++                 # so, add them explicitly to choose right one
++                 ('fedora', '/etc/fedora-release'),
++                 ('mandriva', '/etc/mandriva-release')]
++
++PRIMALS = {'ubuntu': 'debian',
++           }
++
++
++def get_name():
++    for name, path in RELEASE_FILES:
++        if os.path.exists(path):
++            return _get_primal_name(name)
++
++    if os.path.exists('/etc/lsb-release'):
++        for i in file('/etc/lsb-release').readlines():
++            if i.startswith('DISTRIB_ID'):
++                name = i.split('=')[1].strip().strip('"')
++                return _get_primal_name(name)
++
++    release = sorted(glob.glob('/etc/*-release'))
++    if release:
++        name = os.path.basename(release[0]).split('-')[0]
++        return _get_primal_name(name)
++
++
++def _get_primal_name(name):
++    # TODO maybe better to ask distrowatch.com
++    name = name.strip().lower()
++    return PRIMALS.get(name) or name
+-- 
+1.6.5.3
+
+
+From ed7279cb69ff7440afdce82a37126c0279ea1f1a Mon Sep 17 00:00:00 2001
+From: Aleksey Lim <alsroot@member.fsf.org>
+Date: Fri, 1 Jan 2010 04:41:44 +0000
+Subject: Count package implementations
+
+
+diff --git a/zeroinstall/injector/distro.py b/zeroinstall/injector/distro.py
+index 53152ab..7578910 100644
+--- a/zeroinstall/injector/distro.py
++++ b/zeroinstall/injector/distro.py
+@@ -322,8 +322,10 @@ class PackageKitDistribution(Distribution):
+ 
+             for id, info in versions.items():
+                 arch = os.uname()[-1]
+-                impl = factory('package:PackageKit:%s:%s:%s' % \
+-                        (id, info['version'], arch))
++                id = 'package:PackageKit:%s:%s:%s' % \
++                        (id, info['version'], arch)
++
++                impl = factory(id)
+                 impl.version = model.parse_version(info['version'])
+                 impl.machine = arch
+                 impl.installed = info['installed']
+@@ -336,6 +338,7 @@ class PackageKitDistribution(Distribution):
+                 from zeroinstall.injector import reader
+                 from zeroinstall.injector.iface_cache import iface_cache
+                 interface = iface_cache.get_interface(impl.feed.url)
++                interface.implementations[id] = impl
+                 reader.update_user_overrides(interface, impl.feed)
+ 
+         # unfortunately we can't absolutely rely on PackageKit
+diff --git a/zeroinstall/injector/model.py b/zeroinstall/injector/model.py
+index 13668c0..f1aec98 100644
+--- a/zeroinstall/injector/model.py
++++ b/zeroinstall/injector/model.py
+@@ -496,7 +496,6 @@ class Interface(object):
+ 	last_modified = property(lambda self: self._main_feed.last_modified)
+ 	feeds = property(lambda self: self.extra_feeds + self._main_feed.feeds)
+ 	metadata = property(lambda self: self._main_feed.metadata)
+-	postponed = property(lambda self: self._main_feed.postponed)
+ 
+ 	last_checked = property(lambda self: self._main_feed.last_checked)
+ 
+@@ -581,7 +580,7 @@ class ZeroInstallFeed(object):
+ 	# _main is deprecated
+ 	__slots__ = ['url', 'implementations', 'name', 'description', 'summary',
+ 		     'last_checked', 'last_modified', 'feeds', 'feed_for', 'metadata',
+-			'postponed']
++             '_postponed']
+ 
+ 	def __init__(self, feed_element, local_path = None, distro = None):
+ 		"""Create a feed object from a DOM.
+@@ -600,7 +599,7 @@ class ZeroInstallFeed(object):
+ 		self.feed_for = set()
+ 		self.metadata = []
+ 		self.last_checked = None
+-		self.postponed = []
++		self._postponed = []
+ 
+ 		assert feed_element.name in ('interface', 'feed'), "Root element should be <interface>, not %s" % feed_element
+ 		assert feed_element.uri == XMLNS_IFACE, "Wrong namespace on root element: %s" % feed_element.uri
+@@ -810,7 +809,7 @@ class ZeroInstallFeed(object):
+ 
+ 				return impl
+ 
+-			self.postponed = distro.get_package_info(package, factory) or []
++			self._postponed += distro.get_package_info(package, factory) or []
+ 		
+ 		root_attrs = {'stability': 'testing'}
+ 		if main:
+@@ -820,6 +819,11 @@ class ZeroInstallFeed(object):
+ 		for i in package_impls:
+ 			process_native_impl(*i)
+ 
++	def pop_postponed(self):
++		postponed = self._postponed
++		self._postponed = []
++		return postponed
++
+ 	def get_name(self):
+ 		return self.name or '(' + os.path.basename(self.url) + ')'
+ 	
+@@ -861,7 +865,7 @@ class DummyFeed(object):
+ 	feeds = property(lambda self: [])
+ 	summary = property(lambda self: '-')
+ 	description = property(lambda self: '')
+-	postponed = property(lambda self: [])
++	def pop_postponed(self): return []
+ 	def get_name(self): return self.name
+ 	def get_feed(self, url): return None
+ 	def get_metadata(self, uri, name): return []
+@@ -965,6 +969,8 @@ def format_version(version):
+ 	@see: L{Implementation.get_version}
+ 	@rtype: str
+ 	@since: 0.24"""
++	if version is None:
++		return ''
+ 	version = version[:]
+ 	l = len(version)
+ 	for x in range(0, l, 2):
+diff --git a/zeroinstall/injector/policy.py b/zeroinstall/injector/policy.py
+index a8b7d51..e0f2bbe 100644
+--- a/zeroinstall/injector/policy.py
++++ b/zeroinstall/injector/policy.py
+@@ -318,15 +318,13 @@ class Policy(object):
+ 			host_arch = arch.SourceArchitecture(host_arch)
+ 
+ 		while True:
+-			self.solver.solve(self.root, host_arch)
+-
+-			postponed_feeds = []
+-			for i in self.solver.feeds_used:
+-				feed = iface_cache.get_interface(i)
+-				postponed_feeds.extend(feed.postponed)
+-			if postponed_feeds:
+-				yield postponed_feeds
+-				self.solver.solve(self.root, host_arch)
++			postponed = self.solver.solve(self.root, host_arch)
++
++			if postponed:
++				while postponed:
++					yield postponed
++					postponed = [i for i in postponed if not i.happened]
++				continue
+ 
+ 			for w in self.watchers: w()
+ 
+diff --git a/zeroinstall/injector/solver.py b/zeroinstall/injector/solver.py
+index b17aaef..8020843 100644
+--- a/zeroinstall/injector/solver.py
++++ b/zeroinstall/injector/solver.py
+@@ -75,6 +75,7 @@ class DefaultSolver(Solver):
+ 		self.details = self.record_details and {}
+ 		self._machine_group = None
+ 
++		postponed = []
+ 		restrictions = {}
+ 		debug(_("Solve! root = %s"), root_interface)
+ 		def process(dep, arch):
+@@ -131,6 +132,7 @@ class DefaultSolver(Solver):
+ 
+ 				try:
+ 					feed = self.iface_cache.get_interface(f)._main_feed
++					postponed.extend(feed.pop_postponed())
+ 					if not feed.last_modified: continue	# DummyFeed
+ 					if feed.name and iface.uri != feed.url and iface.uri not in feed.feed_for:
+ 						info(_("Missing <feed-for> for '%(uri)s' in '%(feed)s'"), {'uri': iface.uri, 'feed': f})
+@@ -285,3 +287,4 @@ class DefaultSolver(Solver):
+ 					return False
+ 
+ 		self.ready = process(model.InterfaceDependency(root_interface), arch)
++		return postponed
+-- 
+1.6.5.3
+
+
+From 5badc1c9af8495139f90598e403069194f0db50d Mon Sep 17 00:00:00 2001
+From: Aleksey Lim <alsroot@member.fsf.org>
+Date: Sun, 3 Jan 2010 15:06:30 +0000
+Subject: Restart solving if there are pending PackageKit resolves
+
+
+diff --git a/zeroinstall/injector/solver.py b/zeroinstall/injector/solver.py
+index 8020843..bb1a4fa 100644
+--- a/zeroinstall/injector/solver.py
++++ b/zeroinstall/injector/solver.py
+@@ -142,6 +142,10 @@ class DefaultSolver(Solver):
+ 				except Exception, ex:
+ 					warn(_("Failed to load feed %(feed)s for %(interface)s: %(exception)s"), {'feed': f, 'interface': iface, 'exception': str(ex)})
+ 
++			if postponed:
++				info(_("Interface %s has postponed implementations, will try once more"), iface)
++				return None
++
+ 			if not impls:
+ 				info(_("Interface %s has no implementations!"), iface)
+ 				return None
+-- 
+1.6.5.3
+
+
+From 7d616e3c148533e415fbe41d2a1e519fa7cca27c Mon Sep 17 00:00:00 2001
+From: Aleksey Lim <alsroot@member.fsf.org>
+Date: Sun, 3 Jan 2010 15:07:08 +0000
+Subject: Pass correct PK id to install method
+
+
+diff --git a/zeroinstall/injector/distro.py b/zeroinstall/injector/distro.py
+index 7578910..ed6b4a1 100644
+--- a/zeroinstall/injector/distro.py
++++ b/zeroinstall/injector/distro.py
+@@ -249,8 +249,7 @@ class PackageDownload(download.Download):
+         def install_packages():
+             self._transaction = _PackageKitTransaction(installed_cb, error_cb)
+             self._transaction.compat_call('InstallPackages',
+-                    [[[self.hint.get_package_id()]],
+-                     [False, [self.hint.get_package_id()]]])
++                    [[[self.hint.id]], [False, [self.hint.id]]])
+ 
+         _auth_wrapper(install_packages)
+ 
+@@ -318,27 +317,30 @@ class PackageKitDistribution(Distribution):
+             blockers[0].trigger()
+ 
+         def register_versions():
+-            logger_pk.debug(_('Versions for %s are %r'), package_name, versions)
+-
+             for id, info in versions.items():
+                 arch = os.uname()[-1]
+-                id = 'package:PackageKit:%s:%s:%s' % \
++                z_id = 'package:PackageKit:%s:%s:%s' % \
+                         (id, info['version'], arch)
+ 
+-                impl = factory(id)
++                impl = factory(z_id)
+                 impl.version = model.parse_version(info['version'])
+                 impl.machine = arch
+                 impl.installed = info['installed']
+                 impl.size = info['size']
+ 
+-                if not impl.installed:
+-                    source = PackageSource(package_name, info['size'])
++                if impl.installed:
++                    logger_pk.debug(_('Count installed package %s-%s'),
++                            package_name, info['version'])
++                else:
++                    logger_pk.debug(_('Schedule package %s-%s install'),
++                            package_name, info['version'])
++                    source = PackageSource(id, info['size'])
+                     impl.download_sources.append(source)
+ 
+                 from zeroinstall.injector import reader
+                 from zeroinstall.injector.iface_cache import iface_cache
+                 interface = iface_cache.get_interface(impl.feed.url)
+-                interface.implementations[id] = impl
++                interface.implementations[z_id] = impl
+                 reader.update_user_overrides(interface, impl.feed)
+ 
+         # unfortunately we can't absolutely rely on PackageKit
+-- 
+1.6.5.3
+

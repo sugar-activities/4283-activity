@@ -1,0 +1,23 @@
+[DEFAULT]
+uid = 0sugar
+summary = Sugar Services packaging tools
+license = GPLv2+
+homepage = http://wiki.sugarlabs.org/go/Documentation_Team/Services
+
+[Service]
+requires = zeroinstall-injector, 0compile
+exclude = zeroinstall/*, zerosugar/launcher/*, zerosugar/injector/*, 0sugar*
+main = 0sugar
+
+[Service/injector]
+requires = zeroinstall-injector
+exclude = zeroinstall/*, zerosugar/launcher/*, zerosugar/publisher/*, 0sugar*
+main = 0sugar-inject
+
+[Service/launcher]
+exclude = zerosugar/publisher/*, zerosugar/injector/*, 0sugar, 0sugar-injector
+main = 0sugar-launch
+
+[Maintain]
+version = 1
+exec = tar cjphf %(uid)s.tar.bz2 --exclude *.tar.* *

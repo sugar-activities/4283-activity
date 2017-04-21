@@ -1,0 +1,38 @@
+DEBUG:root:Supported systems: '{None: 2, 'Linux': 1}'
+DEBUG:root:Supported processors: '{'x86_64': 0, 'i586': 2, 'i486': 3, 'i686': 1, None: 5, 'i386': 4}'
+INFO:test:Pull files/bad.xml.
+DEBUG:root:Supported systems: '{None: 2, 'Linux': 1}'
+DEBUG:root:Supported processors: '{'x86_64': 0, 'i586': 2, 'i486': 3, 'i686': 1, None: 5, 'i386': 4}'
+DEBUG:root:Solve! root = /home/sugar/src/git/0sugar/tests/launch/files/bad.xml
+DEBUG:root:Initialising new interface object for /home/sugar/src/git/0sugar/tests/launch/files/bad.xml
+DEBUG:root:Loading local interface file '/home/sugar/src/git/0sugar/tests/launch/files/bad.xml'
+ERROR:injector:Fail to pull /home/sugar/src/git/0sugar/tests/launch/files/bad.xml into queue.
+Traceback (most recent call last):
+  File "/home/me/src/sugar/git/0sugar/zerosugar/launcher/synthesis.py", line 183, in _pull
+    root, links = link_new(uri)
+  File "/home/me/src/sugar/git/0sugar/zerosugar/launcher/synthesis.py", line 95, in link_new
+    if root.policy.need_download():
+  File "/home/me/src/sugar/git/0sugar/zeroinstall/injector/policy.py", line 388, in need_download
+    self.solver.solve(self.root, host_arch)
+  File "/home/me/src/sugar/git/0sugar/zeroinstall/injector/solver.py", line 306, in solve
+    self.ready = process(model.InterfaceDependency(root_interface), arch)
+  File "/home/me/src/sugar/git/0sugar/zeroinstall/injector/solver.py", line 82, in process
+    iface = self.iface_cache.get_interface(dep.interface)
+  File "/home/me/src/sugar/git/0sugar/zeroinstall/injector/iface_cache.py", line 323, in get_interface
+    reader.update_from_cache(self._interfaces[uri])
+  File "/home/me/src/sugar/git/0sugar/zeroinstall/injector/reader.py", line 31, in update_from_cache
+    update(interface, interface.uri, local = True)
+  File "/home/me/src/sugar/git/0sugar/zeroinstall/injector/reader.py", line 147, in update
+    feed = ZeroInstallFeed(root, local_path, distro.get_host_distribution())
+  File "/home/me/src/sugar/git/0sugar/zeroinstall/injector/model.py", line 811, in __init__
+    process_group(feed_element, root_attrs, [], [])
+  File "/home/me/src/sugar/git/0sugar/zeroinstall/injector/model.py", line 687, in process_group
+    dep = process_depends(child)
+  File "/home/me/src/sugar/git/0sugar/zeroinstall/injector/model.py", line 115, in process_depends
+    dependency.bindings.append(process_binding(e))
+  File "/home/me/src/sugar/git/0sugar/zeroinstall/injector/model.py", line 97, in process_binding
+    if binding.insert is None: raise InvalidInterface(_("Missing 'insert' in binding"))
+InvalidInterface: Missing 'insert' in binding
+INFO:test:Missing 'insert' in binding
+INFO:test:Processed: 0; skipped: 1.
+INFO:test:Cancelled.

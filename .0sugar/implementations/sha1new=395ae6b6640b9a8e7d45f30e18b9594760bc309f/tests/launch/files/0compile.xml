@@ -1,0 +1,33 @@
+<?xml version="1.0" ?>
+<?xml-stylesheet type='text/xsl' href='interface.xsl'?>
+<interface uri="http://localhost:8000/files/0compile.xml" xmlns="http://zero-install.sourceforge.net/2004/injector/interface">
+  <name>0compile</name>
+  <summary>create a binary release from source code</summary>
+  <description>
+0compile creates a binary from source code, either for your own use or ready for
+publishing on the web through Zero Install. It can use Zero Install to download
+any build dependencies (compilers, header files, build tools, etc).
+
+This is useful if there is no binary for your platform, or if you wish to modify
+the program in some way.
+
+If plash is installed, it is used to sandbox the build so that it can't
+accidentally modifiy any files outside of the build directory.
+
+For a full tutorial, see 0compile's homepage.</description>
+  <homepage>http://0install.net/0compile.html</homepage>
+  <category>Development</category>
+
+  <group main="0compile">
+      <implementation id="sha1new=b44757b155ebf0de8343ecbdf18563e9e5d2c29f" released="2009-06-27" self-test="tests/testcompile.py" version="0.18">
+      <manifest-digest sha256="feba92a479210a34ed911470de3fd054a2e03ae2ac6ece032ad7ae44eb5adc90"/>
+      <archive extract="0compile-0.18" href="http://localhost:8000/files/0compile-0.18.tar.bz2" size="32053"/>
+    </implementation>
+  </group>
+
+</interface>
+<!-- Base64 Signature
+iEYEABECAAYFAksmfBIACgkQJc5IBkWoygeqsACfZOXiCW/tPEy1pwizbSZhMhkX8wUAoIHcuntK
+OrTa0Yhj3cwnMPIgUJms
+
+-->

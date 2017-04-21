@@ -1,0 +1,19 @@
+<?xml version="1.0" ?>
+<?xml-stylesheet type='text/xsl' href='interface.xsl'?>
+<interface uri="http://localhost:8000/.test/dependency.xml" xmlns="http://zero-install.sourceforge.net/2004/injector/interface">
+    <name>test</name>
+    <summary>just for test</summary>
+  <description>
+</description>
+  <implementation id="sha1new=ee3e3f21cc60b0fee55e519ea1d9f2a57a9e8336" released="2009-12-30" stability="buggy" version="1">
+    <archive extract="Dependency" href="http://localhost:8000/files/Dependency.tgz" size="169" type="application/x-compressed-tar"/>
+  </implementation>
+  <implementation id="sha1new=f9014b7820aa552fdb45317f5196e2224c38d714" main="main" released="2009-12-30" stability="stable" version="2">
+      <archive href="http://localhost:8000/files/Dependency-2.tgz" size="145" type="application/x-compressed-tar"/>
+  </implementation>
+</interface>
+<!-- Base64 Signature
+iEYEABECAAYFAks7jKEACgkQJc5IBkWoygdWugCfVGEoPvJuleLwReQd/Xaze6naSj0Anj36UHb7
+Gy/oDjBqZdhnf/aXPqRZ
+
+-->

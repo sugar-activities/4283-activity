@@ -1,0 +1,20 @@
+<?xml version="1.0" ?>
+<?xml-stylesheet type='text/xsl' href='interface.xsl'?>
+<interface uri="http://localhost:8000/.test/mirror-3.xml" xmlns="http://zero-install.sourceforge.net/2004/injector/interface">
+    <name>test</name>
+    <summary>just for test</summary>
+  <description>
+</description>
+  <implementation id="sha1new=e94bde585dbd5be2a35dc697658378a7c5684130" main="main" released="2009-12-31" stability="stable" version="3">
+      <archive href="http://localhost:8000/files/Refresh-3.tgz" size="141" type="application/x-compressed-tar"/>
+  </implementation>
+</interface>
+<!-- Base64 Signature
+iQEcBAABAgAGBQJLPRicAAoJEHI8xbS2hpuBqbQIAIQe8t+F9aF0p23Rrpt61iRq+ROY4QE1NtXR
+NVH9DJkWMk1GEYcINTrqKLCKBfrIIWY/TNHz/zfTSWZzsJ8KTZ11Q8H5AOfs38hz/BoDeQnEx2bA
+j+7IWedr0b1WiEbbtFCjsV+VPYOBK0Z9kw9Sm6gtxfc8fG3ku1lkIdTnpmSzj87QFx91kXVWBujr
+1Ef/2BGgkMnsGgk/wxwEW4XezN1XEYBmAcSquGq3adwAsGXiqA2Iz1jsmrRBmRXconT0JW2hgV5g
+rUGdbIEmdWNwroaqE/R/A0uWz//RE3CPknNnc5PgF+lrC36oasTgHljCH4kpnANlozrSxpr3RwxC
+9Vk=
+
+-->

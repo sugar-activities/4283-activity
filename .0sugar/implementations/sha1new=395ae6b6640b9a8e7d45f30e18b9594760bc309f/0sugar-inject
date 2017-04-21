@@ -1,0 +1,202 @@
+#!/usr/bin/env python
+
+# Copyright (C) 2010, Aleksey Lim
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
+import os
+import shutil
+import logging
+import tempfile
+import subprocess
+from optparse import OptionParser
+from os.path import join, basename, exists, dirname
+
+from zeroinstall.support import ro_rmtree
+
+from zerosugar.util import www, activity, toolkit
+from zerosugar.util.logger import logger
+from zerosugar.injector import export, inject
+
+
+LAUNCHER_URL = 'http://services.sugarlabs.org/0sugar/launcher.xml'
+CACHE_LAUNCHER = 'launch'
+
+_root = None
+
+
+def cmd_init():
+    activity_info = activity.get_info()
+    if activity_info is None:
+        exit(1)
+
+    if not activity_info.has_option('Activity', 'exec'):
+        logger.error('activity.info should contain exec option')
+        exit(1)
+
+    cache_dir = join(_root, activity.CACHE_DIR)
+    if not exists(cache_dir):
+        os.makedirs(cache_dir)
+
+    if exists(join(_root, '.git')):
+        inject.git_ignore(_root, activity.CACHE_DIR)
+    inject.exec_option(activity_info, _root,
+        join(activity.CACHE_DIR, CACHE_LAUNCHER))
+    _create_launcher('0sugar-launch')
+
+def cmd_dist_xo():
+    cmd_init()
+
+    root = join(_root, activity.CACHE_DIR)
+    backup_dir = tempfile.mkdtemp(prefix='.0sugar-inject-',
+            dir=join(_root, '..'))
+    shutil.move(root, backup_dir)
+    try:
+        os.makedirs(root)
+        _inject()
+        _dist_xo()
+    finally:
+        ro_rmtree(root)
+        shutil.move(join(backup_dir, activity.CACHE_DIR), _root)
+
+def _dist_xo():
+    manifest = join(_root, 'MANIFEST')
+
+    if not exists(manifest):
+        try:
+            subprocess.call(['python', 'setup.py', 'dist_xo'])
+        finally:
+            if exists(manifest):
+                os.unlink(manifest)
+    else:
+        __, manifest_backup = tempfile.mkstemp()
+        os.close(__)
+        shutil.copy(manifest, manifest_backup)
+        try:
+            manifest_file = file(manifest, 'a')
+            for root, dirs, files in os.walk(join(_root, activity.CACHE_DIR)):
+                for i in files:
+                    manifest_file.write('%s\n' % \
+                            join(root[len(_root):].lstrip(os.sep), i))
+            manifest_file.close()
+            subprocess.call(['python', 'setup.py', 'dist_xo'])
+        finally:
+            os.unlink(manifest)
+            shutil.move(manifest_backup, manifest)
+
+def _inject():
+    activity_info = activity.get_info()
+
+    iface_dir = join(_root, activity.CACHE_DIR, 'interfaces')
+    impl_dir = join(_root, activity.CACHE_DIR, 'implementations')
+    key_dir = join(_root, activity.CACHE_DIR, 'keys')
+
+    os.makedirs(iface_dir)
+    os.makedirs(impl_dir)
+    os.makedirs(key_dir)
+
+    requires = www.parse_requires(activity_info, 'Activity')
+    deps = []
+    skip = []
+    for i, optional, __, __, __ in requires:
+        if optional and not options.suggests:
+            skip.append(www.url(i))
+        deps.append(www.url(i))
+
+    include = None
+    if options.include:
+        include = [www.url(i) for i in options.include]
+        include.append(LAUNCHER_URL)
+
+    feeds, impls = export.collect([LAUNCHER_URL] + deps,
+            include=include, exclude=skip, force=options.refresh)
+
+    if feeds is None:
+        exit(1)
+
+    gpg_keys = set()
+
+    export.feeds(feeds, iface_dir, gpg_keys)
+    export.impls(impls, impl_dir)
+    for i in gpg_keys:
+        if not export.key(i, key_dir):
+            exit(1)
+
+    launcher_id = [i.id for i in impls if i.feed.url == LAUNCHER_URL][0]
+    _create_launcher('$(dirname $0)/%s' % \
+            join('implementations', launcher_id, '0sugar-selector'))
+
+def _create_launcher(cmd):
+    launcher = join(_root, activity.CACHE_DIR, CACHE_LAUNCHER)
+    launcher_file = file(launcher, 'w')
+    launcher_file.write('#!/bin/sh\nexec %s "$@"' % cmd)
+    launcher_file.close()
+    os.chmod(launcher, 0755)
+
+parser = OptionParser(
+        usage='%prog [options] [command]',
+        description='Inject Sugar Services launching code to sugar activties.',
+        add_help_option=False)
+
+parser.add_option('-R', '--refresh',
+        help='refresh dependency feeds',
+        action='store_true')
+parser.add_option('-s', '--suggests',
+        help='include suggested dependencies',
+        action='store_true')
+parser.add_option('-i', '--include',
+        help='bundle only specified services',
+        action='append')
+parser.add_option('-v', '--verbose',
+        help='make output more verbose',
+        action='count')
+parser.add_option('-V', '--version',
+        help='version info',
+        action='store_true')
+parser.add_option('-h', '--help',
+        help='show this help message and exit',
+        action='store_true')
+
+options, args = parser.parse_args()
+
+if not args or options.help:
+    parser.print_help()
+    print """
+Commands:
+  init                  tweak "exec" option in activty.info to use 0sugar-launch
+                        and add .0sugar to .gitignore file
+  dist_xo               download and place activty dependencies to .0sugar/
+                        sub directory and execute `./setup.py dist_xo` command
+                        to make final .xo bundle
+"""
+    exit(0)
+
+if not options.verbose:
+    pass
+elif options.verbose == 1:
+    logging.getLogger('').setLevel(logging.INFO)
+elif options.verbose > 1:
+    logging.getLogger('').setLevel(logging.DEBUG)
+
+_root = activity.bundle_path()
+if _root is None:
+    logger.error('Cannot find activity/activity.info file.')
+    exit(1)
+
+if 'cmd_' + args[0] not in globals():
+    logger.error('Cannot find command %s.', args[0])
+    exit(1)
+
+globals()['cmd_' + args[0]]()

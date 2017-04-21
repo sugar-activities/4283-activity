@@ -1,0 +1,26 @@
+<?xml version="1.0" ?>
+<?xml-stylesheet type='text/xsl' href='/interface.xsl'?>
+<interface uri="http://services.sugarlabs.org/gstreamer"
+           xmlns="http://zero-install.sourceforge.net/2004/injector/interface"
+           xmlns:compile="http://zero-install.sourceforge.net/2006/namespaces/0compile"
+           xmlns:sugar="http://download.sugarlabs.org/services/saccharin/namespaces/0sugar">
+    <name>gstreamer</name>
+    <summary>GStreamer streaming media framework runtime</summary>
+    <description>GStreamer streaming media framework runtime</description>
+    <homepage>http://gstreamer.sourceforge.net</homepage>
+    <sugar:sibling interface="http://services.sugarlabs.org/gstreamer/devel.xml"/>
+    <package-implementation package="gstreamer0.10" distributions="archlinux"/>
+    <package-implementation package="libgstreamer0.10_0.10" distributions="RPM"/>
+    <package-implementation package="gstreamer" distributions="RPM"/>
+    <package-implementation package="libgstreamer0.10-0" distributions="Debian"/>
+    <package-implementation package="media-libs/gstreamer" distributions="Gentoo"/>
+</interface>
+<!-- Base64 Signature
+iQEcBAABAgAGBQJLeTHCAAoJEHI8xbS2hpuBcAcH+gL8nNDVSRsSWcHCFPLFSGNyGuKaUCC9osF0
+uVotXhD3kcnwrIF+bZTHytHQgAzZmEK68OXCNIGBJnBqxgbJVwHvabBptoIsE9Po+13yqALrp2Mm
+zp5uYipUTmRkWSQaGatnfJEosPUKm70gQf1RHMfCdjKyCb4FA1TrOJL/Lbj0277rgcXOam/7DZC1
+pFMOK5dbktj1PFWn9Kjvg5k7Ca9kil8CvlRfvrNQglcziIDtCL1abuNQdOhuGDbh+eykWIqzK1On
++pIxJ5RRXLBwobUNujYhQVbuSSMU1WGMzXpSA2akQjijAsFbsKAzxyAPoNakug1avUTaznqjdAS0
+v6M=
+
+-->

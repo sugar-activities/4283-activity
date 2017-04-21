@@ -1,0 +1,22 @@
+<?xml version="1.0" ?>
+<interface uri="http://download.sugarlabs.org/services/packages/devel.xml"
+           xmlns="http://zero-install.sourceforge.net/2004/injector/interface"
+           xmlns:compile="http://zero-install.sourceforge.net/2006/namespaces/0compile"
+           xmlns:sugar="http://download.sugarlabs.org/services/saccharin/namespaces/0sugar">
+    <name>packages</name>
+    <summary>packages summary</summary>
+    <description>packages summary</description>
+    <homepage>http://packages/</homepage>
+    <package-implementation package="name3-dev" distro="oof"/>
+    <package-implementation package="name2-dev" distro="foo"/>
+    <package-implementation package="dev"/>
+</interface>
+<!-- Base64 Signature
+iQEcBAABAgAGBQJLX5xaAAoJEHI8xbS2hpuBiCMH/3rillK0zhIZyWcPnbti9nbBZZhFMzNMO1yD
+fM5OaUDNi+3DETskI7switKTJc9Ox5p5aDc/SadH6C4LphrbaLqk6Th3SYuUdjf4ILfLKrCgCMfB
+zTLbWs/eykd3331zp30A2bdYV8fptlhRlNMLHC6foCljKyKdHfNqMgLy9i0ekC6wQV+P6Do4dDBs
+V32TuLghhTjC/ODZp7x3ZBSrk79hZDYi7kfJc+fc9TIckBBBkT/8bS8muKhAaBJcLIAz+N5GxCbT
+P1Hh4Y7qvO1jjplpoSBMHKgaeevkwSU0DEVCYd+7tsqPz4IdMD9pcOKUtMA7wmtzxNTmc6AQF8fI
+GgU=
+
+-->

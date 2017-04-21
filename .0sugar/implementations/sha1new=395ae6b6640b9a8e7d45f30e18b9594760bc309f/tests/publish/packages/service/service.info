@@ -1,0 +1,14 @@
+[Service]
+name = packages
+summary = packages summary
+license = GPLv2+
+homepage = http://packages/
+
+[Packaged]
+foo = name2
+oof = name3
+
+[Packaged/devel]
+name = dev
+foo = name2-dev
+oof = name3-dev

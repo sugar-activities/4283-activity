@@ -1,0 +1,13 @@
+<?xml version="1.0" ?>
+<interface xmlns="http://zero-install.sourceforge.net/2004/injector/interface" min-injector-version="0.42">
+    <name>foo</name>
+    <summary>foo</summary>
+    <implementation id="." version="1" main="injection">
+        <requires interface="http://rox.sourceforge.net/2005/interfaces/ROX-Lib">
+            <environment insert="" mode="prepend" name="LD_LIBRARY_PATH"/>
+        </requires>
+        <requires interface="http://0install.net/tests/GNU-Hello.xml">
+            <environment insert="" mode="prepend" name="LD_LIBRARY_PATH"/>
+        </requires>
+    </implementation>
+</interface>

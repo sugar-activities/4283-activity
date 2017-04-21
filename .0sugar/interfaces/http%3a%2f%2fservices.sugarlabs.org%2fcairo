@@ -1,0 +1,26 @@
+<?xml version="1.0" ?>
+<?xml-stylesheet type='text/xsl' href='/interface.xsl'?>
+<interface uri="http://services.sugarlabs.org/cairo"
+           xmlns="http://zero-install.sourceforge.net/2004/injector/interface"
+           xmlns:compile="http://zero-install.sourceforge.net/2006/namespaces/0compile"
+           xmlns:sugar="http://download.sugarlabs.org/services/saccharin/namespaces/0sugar">
+    <name>cairo</name>
+    <summary>A vector graphics library with cross-device output support</summary>
+    <description>A vector graphics library with cross-device output support</description>
+    <homepage>http://cairographics.org/</homepage>
+    <sugar:sibling interface="http://services.sugarlabs.org/cairo/devel.xml"/>
+    <package-implementation package="cairo" distributions="RPM"/>
+    <package-implementation package="libcairo2" distributions="RPM"/>
+    <package-implementation package="libcairo" distributions="RPM"/>
+    <package-implementation package="libcairo2" distributions="Debian"/>
+    <package-implementation package="x11-libs/cairo" distributions="Gentoo"/>
+</interface>
+<!-- Base64 Signature
+iQEcBAABAgAGBQJLeTEkAAoJEHI8xbS2hpuBlJQIAK2/G2szSG9Jn6A5lK0gTzS7yxuC3xBXHeFg
+KpWjYSwX8wXXWlTjVsxl9+bbQxCEq5ovjhS9hE33/AbD7vaikS5RNdeu+Qvfa4sS8HJXFVBM1EbP
+zueKNEWfcv0F1mZ1GchUyF4P9QrORTGGXKNoJvlqW4xHS2ZnOPmYeTNpGW7YIex6lLiASI3gtXbm
+MyKi3HZhta/TeY465w7w9CVDdkRZVSj2FPcy1+A/Bvq/4/j+3V/q7um9sj7qLs2UKPltMCBvM84G
+eO6vwlEKNPUvzk7IOO2fftjBlqBVasdSv7uUrm6Ht1PizL3reYfNAtJB5ZxvKuSmMQ8AxjUpkmjr
+tJ4=
+
+-->

@@ -1,0 +1,10 @@
+[Activity]
+name = CartoonBuilder
+license = GPLv2+
+exec = .0sugar/launch sugar-activity activity.CartoonBuilderActivity
+activity_version = 9
+bundle_id = com.ywwg.CartoonBuilderActivity
+show_launcher = yes
+requires = toolkit/python
+icon = activity-cartoonbuilder
+

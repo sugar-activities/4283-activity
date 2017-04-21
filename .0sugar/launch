@@ -1,0 +1,2 @@
+#!/bin/sh
+exec $(dirname $0)/implementations/sha1new=395ae6b6640b9a8e7d45f30e18b9594760bc309f/0sugar-selector "$@"

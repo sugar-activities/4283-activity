@@ -1,0 +1,326 @@
+#!/usr/bin/env python
+
+# Copyright (C), 2009 Aleksey Lim
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
+import time
+timer_start = time.time()
+
+import os
+import sys
+import signal
+import tempfile
+from subprocess import Popen
+
+import gobject
+
+from zeroinstall.zerostore import Store
+from zeroinstall.injector.iface_cache import iface_cache
+
+from zerosugar.util import www
+from zerosugar.util import activity
+from zerosugar.util.logger import logger
+from zerosugar.launcher.synthesis import Flask
+
+
+EXIT_NO_MAIN = 1
+EXIT_CANCEL = 2
+EXIT_NO_REQUIRES = 3
+EXIT_CMD_ERROR = 4
+
+SUGAR_ARGS = {
+        '-b': 'SUGAR_BUNDLE_ID',
+        '--bundle-id': 'SUGAR_BUNDLE_ID',
+        '-a': 'SUGAR_ACTIVITY_ID',
+        '--activity-id': 'SUGAR_ACTIVITY_ID',
+        '-o': 'SUGAR_OBJECT_ID',
+        '--object-id': 'SUGAR_OBJECT_ID',
+        '-u': 'SUGAR_URI',
+        '--uri': 'SUGAR_URI',
+        }
+
+_main_loop = None
+_use_main = False
+_sugarize = False
+_sugar_args = {}
+_cmd = []
+
+
+class Main(gobject.GObject):
+
+    __gsignals__ = {
+        'stop': (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, []),
+        }
+
+    def __init__(self, feed):
+        gobject.GObject.__init__(self)
+
+        self._feed = feed
+        self._child = None
+        self._terminate_sent = False
+        self._updater = None
+        self._launcher = None
+        self._fetcher = Flask()
+        self._old_sigchld = signal.SIG_DFL
+        self._fetcher_messages = ''
+
+        self._fetcher.connect('cancelled', self.__fetcher_cancelled_cb)
+        self._fetcher.connect('progress', self.__fetcher_progress_cb)
+        self._fetcher.connect('verbose', self.__fetcher_verbose_cb)
+        self._fetcher.connect('finished', self.__fetcher_finished_cb)
+
+        self._fetcher.pull([feed])
+
+        self.connect('stop', self.__stop_cb)
+
+    def __stop_cb(self, sender):
+        if self._child is None:
+            self._cancel()
+        elif self._child.poll() is not None:
+            self._wait_for_child()
+        elif self._terminate_sent:
+            os.kill(self._child.pid, signal.SIGKILL)
+            self._child.kill()
+        else:
+            os.kill(self._child.pid, signal.SIGTERM)
+            self._terminate_sent = True
+
+    def _cancel(self):
+        _main_loop.quit()
+        exit(EXIT_CANCEL)
+
+    def __fetcher_cancelled_cb(self, flask):
+        logger.info('Solving took %s seconds.', time.time() - timer_start)
+
+        if self._fetcher.cancelled_by_intention:
+            self._cancel()
+        elif self._launcher is None:
+            self._create_launcher()
+            self._launcher.switch_to_error()
+
+    def __fetcher_progress_cb(self, flask, fraction):
+        if self._launcher is None:
+            self._create_launcher()
+
+    def _create_launcher(self):
+        from zerosugar.launcher.window import Window
+
+        def destroy_cb(sender):
+            if self._fetcher is not None:
+                self._fetcher.cancel()
+
+        self._launcher = Window(self._fetcher,
+                _sugar_args.get('SUGAR_BUNDLE_ID'),
+                _sugar_args.get('SUGAR_ACTIVITY_ID'), self._fetcher_messages)
+
+        self._launcher.connect('destroy', destroy_cb)
+        self._launcher.connect('stop',
+                lambda sender: self.emit('stop'))
+        self._launcher.show()
+
+    def __fetcher_verbose_cb(self, flask, message):
+        logger.info(message)
+        self._fetcher_messages += "\n"
+        self._fetcher_messages += message
+
+    def __fetcher_finished_cb(self, flask):
+        logger.info('Solving took %s seconds.', time.time() - timer_start)
+
+        if _use_main:
+            main = None
+
+            policy = self._fetcher.policy
+            for impl in policy.solver.selections.values():
+                if not impl.main:
+                    continue
+                if impl.id.startswith('package:'):
+                    main = impl.main
+                elif impl.id.startswith(os.sep):
+                    main = os.path.join(impl.id, impl.main)
+                else:
+                    impl_path = iface_cache.stores.lookup(impl.id)
+                    main = os.path.join(impl_path, impl.main)
+                break
+
+            if main is None:
+                logger.error('Cannot find main.')
+                exit(EXIT_CMD_ERROR)
+            else:
+                _cmd.insert(0, main)
+
+        logger.debug('Run command: %s.', _cmd)
+
+        env = self._fetcher.get_environ()
+        if _sugarize:
+            for name, value in _sugar_args.items():
+                env[name] = value
+
+        if not self._fetcher.is_stale() and self._launcher is None:
+            # we don't have any work at this moment, so just exec activity
+            os.execvpe(_cmd[0], _cmd, env=env)
+            exit(EXIT_CMD_ERROR)
+
+        import wnck
+        screen = wnck.screen_get_default()
+        screen.connect('window-opened', self.__window_opened_cb)
+        self._old_sigchld = signal.signal(signal.SIGCHLD, self.__sigchld_cb)
+
+        try:
+            self._child = Popen(_cmd, env=env)
+        except Exception:
+            logger.exception('Cannot run command: %r.', _cmd)
+            exit(EXIT_CMD_ERROR)
+
+    def __sigchld_cb(self, signum, frame):
+        if self._child is not None and self._child.poll() is not None:
+            self.emit('stop')
+
+    def _check_for_updates(self):
+        # stop listening signal to not interfere to update subprocesses
+        signal.signal(signal.SIGCHLD, self._old_sigchld)
+
+        if self._child.poll() is not None:
+            exit(self._child.returncode)
+
+        if self._launcher is not None:
+            self._launcher.hide()
+
+        if not self._fetcher.is_stale():
+            logger.info('Feeds are not stale.')
+            self._wait_for_child()
+
+        self._fetcher = None
+        self._updater = Flask()
+
+        def if_child_is_died():
+            if self._child.poll() is not None:
+                self._wait_for_child()
+
+        self._updater.connect('finished',
+                lambda sender: self._wait_for_child())
+        self._updater.connect('cancelled',
+                lambda sender: self._wait_for_child())
+        self._updater.connect('progress',
+                lambda sender, fraction: if_child_is_died())
+        self._updater.connect('verbose',
+                lambda sender, message: logger.info(message))
+
+        logger.info('Start feeds refresh')
+        self._updater.refresh([self._feed])
+
+    def _wait_for_child(self):
+        self._child.wait()
+        exit(self._child.returncode)
+
+    def __window_opened_cb(self, screen, window):
+        import wnck
+        if window.get_window_type() != wnck.WINDOW_NORMAL or \
+                self._launcher is not None and \
+                self._launcher.window.xid == window.get_xid():
+            return
+
+        from sugar import wm
+        if _sugar_args.get('SUGAR_ACTIVITY_ID') != wm.get_activity_id(window):
+            return
+
+        screen.disconnect_by_func(self.__window_opened_cb)
+
+        import gtk
+        # have to do what shell does for newly created activity windows
+        gdk_window = gtk.gdk.window_foreign_new(window.get_xid())
+        gdk_window.set_decorations(0)
+        window.maximize()
+
+        self._check_for_updates()
+
+def main(feed):
+    launcher = Main(feed)
+    global _main_loop
+    _main_loop = gobject.MainLoop()
+    _main_loop.run()
+
+def compose_tmp_feed(feed):
+    activity_info = activity.get_info()
+    if activity_info is None:
+        exit(EXIT_NO_REQUIRES)
+
+    feed_file = file(feed, 'w')
+    feed_file.write(www.header())
+    feed_file.write(www.impl_header())
+
+    requires = www.parse_requires(activity_info, 'Activity')
+    for dep, optional, not_before, before, bindings in requires:
+        feed_file.write('<requires interface="%s"' % www.url(dep))
+        if optional:
+            feed_file.write(' optional="true"')
+        feed_file.write('>')
+
+        if not_before or before:
+            feed_file.write('<version')
+            if not_before:
+                feed_file.write(' not-before="%s"' % not_before)
+            if before:
+                feed_file.write(' before="%s"' % before)
+            feed_file.write('/>')
+        for i in bindings:
+            feed_file.write(www.binding(i))
+        feed_file.write('</requires>')
+
+    feed_file.write(www.impl_footer())
+    feed_file.write(www.footer())
+    feed_file.close()
+
+if len(sys.argv) == 1:
+    print 'Usage: %s [+<path-to-additional-0install-store>] [-main] ' \
+            '[-sugarize] [any-command-to-export-0sugar-dependencies-to]' % \
+            os.path.basename(sys.argv[0])
+    exit(0)
+
+bundle_path = activity.bundle_path()
+if bundle_path is None:
+    logger.error('Cannot find activity/activity.info file.')
+    exit(1)
+
+cache = os.path.join(bundle_path, activity.CACHE_DIR, 'implementations')
+iface_cache.stores.stores.append(Store(cache))
+
+sugar_arg = None
+for i in sys.argv[1:]:
+    if sugar_arg:
+        _sugar_args[sugar_arg] = i
+        sugar_arg = None
+    elif i.startswith('+'):
+        cache = os.path.join(bundle_path, i[1:])
+        iface_cache.stores.stores.append(Store(cache))
+    elif i == '-main':
+        _use_main = True
+    elif i == '-sugarize':
+        _sugarize = True
+    elif _sugarize and i in SUGAR_ARGS:
+        sugar_arg = SUGAR_ARGS[i]
+    else:
+       _cmd.append(i)
+
+# create temprory local feed to let 0install process it
+# to install all activity dependencies
+fd, tmp_feed = tempfile.mkstemp(suffix='saccharin.tmp')
+os.close(fd)
+
+try:
+    compose_tmp_feed(tmp_feed)
+    main(tmp_feed)
+finally:
+    os.unlink(tmp_feed)

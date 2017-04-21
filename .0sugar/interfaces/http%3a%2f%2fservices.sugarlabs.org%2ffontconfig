@@ -1,0 +1,24 @@
+<?xml version="1.0" ?>
+<?xml-stylesheet type='text/xsl' href='/interface.xsl'?>
+<interface uri="http://services.sugarlabs.org/fontconfig"
+           xmlns="http://zero-install.sourceforge.net/2004/injector/interface"
+           xmlns:compile="http://zero-install.sourceforge.net/2006/namespaces/0compile"
+           xmlns:sugar="http://download.sugarlabs.org/services/saccharin/namespaces/0sugar">
+    <name>fontconfig</name>
+    <summary>A library for configuring and customizing font access</summary>
+    <description>A library for configuring and customizing font access</description>
+    <homepage>http://fontconfig.org/</homepage>
+    <sugar:sibling interface="http://services.sugarlabs.org/fontconfig/devel.xml"/>
+    <package-implementation package="fontconfig" distributions="RPM"/>
+    <package-implementation package="fontconfig" distributions="Debian"/>
+    <package-implementation package="media-libs/fontconfig" distributions="Gentoo"/>
+</interface>
+<!-- Base64 Signature
+iQEcBAABAgAGBQJLeTFZAAoJEHI8xbS2hpuBuoIH/00OOY3PgciYRCtHhES9JGU3C/8rXPy2IhJx
+lxSe7eoUoL/QZOwldD53Skm2JfEJ0kxJsWOiWHFWNrDmPsTz3xA+ZRSvhrOKt0RjHqE1KjkKPsC6
+Zw9B+OBwaTrG1rULmyFe/6Qv9tef3R5A/oE9rY86AASi5Oz/wmBfxUDOrNMAGEMJ8i0FJJtGByO8
+pmGXOGptqm2AzLpGOUlyeVDg0/TSrGRhG40St2/x0HKnhIRKOswUt4jVlgYc4tcBzL+L+1lmpOIg
+gNlNqI2/KQg81+TC/ZkxcmLgoUIWCxTtPG/VFe63+ZC9lGL+P6K40Q0EQWUOpek5ExZSvPkKrP+j
+tTA=
+
+-->

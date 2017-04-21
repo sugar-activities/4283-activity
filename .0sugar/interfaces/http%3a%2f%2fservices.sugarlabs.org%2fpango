@@ -1,0 +1,25 @@
+<?xml version="1.0" ?>
+<?xml-stylesheet type='text/xsl' href='/interface.xsl'?>
+<interface uri="http://services.sugarlabs.org/pango"
+           xmlns="http://zero-install.sourceforge.net/2004/injector/interface"
+           xmlns:compile="http://zero-install.sourceforge.net/2006/namespaces/0compile"
+           xmlns:sugar="http://download.sugarlabs.org/services/saccharin/namespaces/0sugar">
+    <name>pango</name>
+    <summary>Internationalized text layout and rendering library</summary>
+    <description>Internationalized text layout and rendering library</description>
+    <homepage>http://www.pango.org/</homepage>
+    <sugar:sibling interface="http://services.sugarlabs.org/pango/devel.xml"/>
+    <package-implementation package="pango" distributions="RPM"/>
+    <package-implementation package="libpango" distributions="RPM"/>
+    <package-implementation package="libpango1.0-0" distributions="Debian"/>
+    <package-implementation package="x11-libs/pango" distributions="Gentoo"/>
+</interface>
+<!-- Base64 Signature
+iQEcBAABAgAGBQJLeTI7AAoJEHI8xbS2hpuBgOkH/2zCtDKTNgezdJ48iewhhisyqOALbA6/978b
+xBnsRJ8vnBKXA6b0Qsyb6bwr2Rq8//A6Sa8C4AFYdrMAkB0Wr3vOpvfQfYoC1ojGse4tYsmlFX4z
+8y+yx92jYlH3hjjK/jt6lgQJD3wFyNRIf76VWeDdkXovFV2QuP7HUboIpUIF0/+1bX0m/bAJ6xyV
+ggq2so5gDMBoEmxoD7Yh1Tv/NRpeVDdC/i+fAPXsHa6jzhLX30BeHQPf8l42rSuvdb7nz7h1kMlo
+iNPMDiKWL/5cTfE7C0GJoTqu/ZisFesnEjBhIcBHfCJI2Kq8aYEBhaD2y3DRmAf11gpn5sa3i8J9
+4F4=
+
+-->

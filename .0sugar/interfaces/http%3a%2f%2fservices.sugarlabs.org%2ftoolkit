@@ -1,0 +1,88 @@
+<?xml version="1.0" ?>
+<?xml-stylesheet type='text/xsl' href='/interface.xsl'?>
+<interface uri="http://services.sugarlabs.org/toolkit"
+           xmlns="http://zero-install.sourceforge.net/2004/injector/interface"
+           xmlns:compile="http://zero-install.sourceforge.net/2006/namespaces/0compile"
+           xmlns:sugar="http://download.sugarlabs.org/services/saccharin/namespaces/0sugar">
+    <name>toolkit</name>
+    <summary>A set of first level widgets and misc components</summary>
+    <description>A set of first level widgets and misc components</description>
+    <homepage>http://wiki.sugarlabs.org/go/Activity_Team/Services/Toolkit</homepage>
+    <sugar:sibling interface="http://services.sugarlabs.org/toolkit/devel.xml"/>
+    <sugar:sibling interface="http://services.sugarlabs.org/toolkit/python.xml"/>
+    <implementation id="sha1new=88e69f18718780321c7a5ff7842bf6941ba2bce9"
+                    version="1-14"
+                    released="2010-02-13"
+                    arch="Linux-x86_64"
+                    license="GPLv2+"
+                    stability="stable"
+                    sugar:commit="c36c27c5bac704487330ae25cde82065f06159bf">
+        <environment name="LD_LIBRARY_PATH" mode="prepend" insert="lib"/>
+        <requires interface="http://services.sugarlabs.org/gtk+">
+        </requires>
+        <requires interface="http://services.sugarlabs.org/gconf">
+        </requires>
+        <requires interface="http://services.sugarlabs.org/libgee">
+            <version not-before="0.5"/>
+        </requires>
+        <archive href="http://download.sugarlabs.org/services/toolkit/toolkit-1-14-Linux-x86_64.tar.bz2" size="16786"/>
+    </implementation>
+    <implementation id="sha1new=62e76a86718779404e4f2d434848aa4d61e21b48"
+                    version="1-13"
+                    released="2010-02-13"
+                    arch="*-src"
+                    license="GPLv2+"
+                    stability="stable"
+                    compile:command='"$SRCDIR"/configure CFLAGS="-O2 -pipe" --prefix="$DISTDIR" am_cv_python_pythondir="$DISTDIR"/python  &amp;&amp; make &amp;&amp; make install-strip'
+                    sugar:commit="e6d818dc9856a3249e79ce1825ca2004a4103182">
+        <environment name="LD_LIBRARY_PATH" mode="prepend" insert="lib"/>
+        <environment name="PKG_CONFIG_PATH" mode="prepend" insert="lib/pkgconfig"/>
+        <environment name="PYTHONPATH" mode="prepend" insert="python"/>
+        <requires interface="http://services.sugarlabs.org/gtk+/devel.xml" compile:include-binary="true">
+        </requires>
+        <requires interface="http://services.sugarlabs.org/gconf/devel.xml" compile:include-binary="true">
+        </requires>
+        <requires interface="http://services.sugarlabs.org/libgee/devel.xml" compile:include-binary="true">
+        </requires>
+        <requires interface="http://services.sugarlabs.org/gtk+" compile:include-binary="true">
+        </requires>
+        <requires interface="http://services.sugarlabs.org/gconf" compile:include-binary="true">
+        </requires>
+        <requires interface="http://services.sugarlabs.org/libgee" compile:include-binary="true">
+            <version not-before="0.5"/>
+        </requires>
+        <requires interface="http://services.sugarlabs.org/pkgconfig">
+        </requires>
+        <requires interface="http://services.sugarlabs.org/make">
+        </requires>
+        <requires interface="http://services.sugarlabs.org/gcc-c">
+        </requires>
+        <archive href="http://download.sugarlabs.org/services/toolkit/toolkit-1-13-src.tar.bz2" size="285760" extract="sugar-toolkit-1-13"/>
+    </implementation>
+    <implementation id="sha1new=839b473da58719666c1b84922f21721176ce0cf4"
+                    version="1-12"
+                    released="2010-02-08"
+                    arch="Linux-i486"
+                    license="GPLv2+"
+                    stability="stable"
+                    sugar:commit="25cced309f604422ea4a7f7ccb8c6100806bdf18">
+        <environment name="LD_LIBRARY_PATH" mode="prepend" insert="lib"/>
+        <requires interface="http://services.sugarlabs.org/gtk+">
+        </requires>
+        <requires interface="http://services.sugarlabs.org/gconf">
+        </requires>
+        <requires interface="http://services.sugarlabs.org/libgee">
+            <version not-before="0.5"/>
+        </requires>
+        <archive href="http://download.sugarlabs.org/services/toolkit/toolkit-1-12-Linux-i486.tar.bz2" size="14823"/>
+    </implementation>
+</interface>
+<!-- Base64 Signature
+iQEcBAABAgAGBQJLe+UAAAoJEHI8xbS2hpuBm8YIAII1i7ZFfyGUUwAwOyjzh9iq9ols9b6rlrHN
+X+0ZBzZ/c/NLllYpEL94XayzJaQMr4AKcl8lwKdX86nmdJ9bu+2BjKRZJyzPVk8i7RcGz8CqoYVo
+X4l5WLATu857U20r2gu1HWgi49stcbdJC4kMFn43oImVF2He7BxTOGoP3bEY15zq1CeaXXj1bHbi
+AL2OCnuMUoW644ZyPAtgpTh7g1U8KJzeK2fOQQKBqzoSMkQB0Ceeda0LOmmlmGeX2BYyeiI8cC0i
+IBkbq73yMUPFHXKdbxflwwlvAPtyOF2kk8v0o6lEKCRwxsILSezS8c+KuV6WtM9YmyJr9k10MIjP
+l+Y=
+
+-->

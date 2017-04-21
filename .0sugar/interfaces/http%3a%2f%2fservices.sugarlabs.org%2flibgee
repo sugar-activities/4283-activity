@@ -1,0 +1,67 @@
+<?xml version="1.0" ?>
+<?xml-stylesheet type='text/xsl' href='/interface.xsl'?>
+<interface uri="http://services.sugarlabs.org/libgee"
+           xmlns="http://zero-install.sourceforge.net/2004/injector/interface"
+           xmlns:compile="http://zero-install.sourceforge.net/2006/namespaces/0compile"
+           xmlns:sugar="http://download.sugarlabs.org/services/saccharin/namespaces/0sugar">
+    <name>libgee</name>
+    <summary>GObject-based interfaces and classes for commonly used data structures</summary>
+    <description>GObject-based interfaces and classes for commonly used data structures</description>
+    <homepage>http://live.gnome.org/Libgee</homepage>
+    <sugar:sibling interface="http://services.sugarlabs.org/libgee/devel.xml"/>
+    <implementation id="sha1new=757b31a6bf41e14a7dd80df84bda79cc9ec0ba23"
+                    version="0.5.0-7"
+                    released="2010-02-08"
+                    arch="Linux-x86_64"
+                    license="LGPLv2.1+"
+                    stability="stable">
+        <environment name="LD_LIBRARY_PATH" mode="prepend" insert="lib"/>
+        <requires interface="http://services.sugarlabs.org/glib">
+            <version not-before="2.12"/>
+        </requires>
+        <archive href="http://download.sugarlabs.org/services/libgee/libgee-0.5.0-7-Linux-x86_64.tar.bz2" size="95735"/>
+    </implementation>
+    <implementation id="sha1new=342d26f8e81c2ce353eb83a598bb619277e6cc1f"
+                    version="0.5.0-7"
+                    released="2010-02-08"
+                    arch="*-src"
+                    license="LGPLv2.1+"
+                    stability="stable"
+                    compile:command='"$SRCDIR"/configure CFLAGS="-O2 -pipe" --prefix="$DISTDIR"  &amp;&amp; make &amp;&amp; make install-strip'>
+        <environment name="LD_LIBRARY_PATH" mode="prepend" insert="lib"/>
+        <environment name="PKG_CONFIG_PATH" mode="prepend" insert="lib/pkgconfig"/>
+        <requires interface="http://services.sugarlabs.org/glib" compile:include-binary="true">
+            <version not-before="2.12"/>
+        </requires>
+        <requires interface="http://services.sugarlabs.org/glib/devel.xml">
+        </requires>
+        <requires interface="http://services.sugarlabs.org/pkgconfig">
+        </requires>
+        <requires interface="http://services.sugarlabs.org/make">
+        </requires>
+        <requires interface="http://services.sugarlabs.org/gcc-c">
+        </requires>
+        <archive href="http://download.sugarlabs.org/services/libgee/libgee-0.5.0.tar.bz2" size="367908" extract="libgee-0.5.0"/>
+    </implementation>
+    <implementation id="sha1new=40aaff3074c8b3211a738b87ae8b4e11a4b897c5"
+                    version="0.5.0-7"
+                    released="2010-02-08"
+                    arch="Linux-i486"
+                    license="LGPLv2.1+"
+                    stability="stable">
+        <environment name="LD_LIBRARY_PATH" mode="prepend" insert="lib"/>
+        <requires interface="http://services.sugarlabs.org/glib">
+            <version not-before="2.12"/>
+        </requires>
+        <archive href="http://download.sugarlabs.org/services/libgee/libgee-0.5.0-7-Linux-i486.tar.bz2" size="75960"/>
+    </implementation>
+</interface>
+<!-- Base64 Signature
+iQEcBAABAgAGBQJLeTHoAAoJEHI8xbS2hpuB7KUH/joXaRRB3ggbCDrczikEQxd2482zC/dzvyBO
+b0W1lYZoIIiTdnMmg6Kc73cMS1uxMiMAODm8PBH8+VWaSBbCd0tNJqh8L7jkJWcvuIFZaBUIX1YG
+hiaE2RIrmTlOH5CxFIWFsUtckNg6gDKl4i6i0AAx+gNyFB4WYGrQe16K4m7aqV4xc//gkvyaQMgO
+Y4cjGGiORBocPi3MKDdrw0gLRM83WrDkshrjoUKSaCdhqKLOkMb1ltRHzBYN92V4Y1pNZzU1hZRl
+DiBHvaFehtEdWGi5pFLrexWCWhqbyaKl4Ia3Rd97rxbSnN7Rg7TDQ97+E9/e3F7moO+HUZgNQxsW
+1R8=
+
+-->

@@ -1,0 +1,271 @@
+# For more information see service.info specification
+# http://wiki.sugarlabs.org/go/Documentation_Team/Services/Service.info_Specification
+
+#
+# Required section
+# ================
+# Section describes main service feed - service.xml
+# but service can contain optional sub feeds, see below
+#
+[Service]
+
+# Include options from another section.
+# There is also predefined [DEFAULT] section which values already included
+# to all sections
+; inherit = CommonSection
+
+# The identity of this service, this field defines name of feed's root
+# directory on the server http://download.sugarlabs.org/services/ as well
+# only lower alphabetic, numeric, "_" or "-" symbols
+uid = my_service
+
+# Service name in free form, equals to uid by default
+; name = My Service
+
+# Short descriptive line
+summary = This is my first service
+
+# Long descriptive text
+# to wrap long text, all lines after second, should start with spaces
+# omit this field to reuse "summary"
+; description = My service explanation
+
+# Service license
+license = GPLv3+
+
+# Project home page
+homepage = http://wiki.sugarlabs.org/go/Activity_Team/Services/MyService
+
+# List of services that should exist before using this one
+# option accepts also full 0install urls (could be useful to include
+# non 0sugar dependencies)
+#
+#   <service-name> [(>=|<|~) <version>] [, ...]
+#
+; requires = toolkit/python
+
+# Like requires option but dependencies could be absent
+# makes sense for large weight dependencies e.g. gcompris/media weights 65M
+# and it's not useful for GCompris activities depend on such huge package,
+# thus they can just suggest gcompris/media and use it only if it exists
+; suggests = gcompris/media
+
+# What environment variables, 0install should export to session
+# which uses this service
+#
+#   [prepend|append|replace] <variable-name> [<insert-text-to-prepand-variable-value>] [, ...]
+#
+; binding = PYTHONPATH
+
+# For applications, path to exec file from service root directory
+# if path in implementation doesn't exist, shell script will be created
+# to launch this command and dependency which provides main file,
+# should export PATH environment variable
+; main = bin/my_exec
+
+# If service is any-arch (there is no [Build] section), it could use
+# exec option instead of main to execute any shell command to startup
+; exec = cd $(dirname $0) && exec java -jar geogebra.jar
+
+# Files to include to service.xml implementations
+#
+#   include = <glob-mask> [, ...]
+#
+# if glob-mask contains '/' symbol, mask will be applied to the whole
+# path string, otherwise only to file names, by default all files
+# will be bundled
+#
+; include = *
+
+# Files to exclude from service.xml implementations
+# uses the same formal like include parameter
+; exclude =
+
+# Makes sense only for binary services and can contain:
+#
+#   '*' for noarch (by default)
+#   'build' for binaries to use current architecture
+#
+; machine = *
+
+# If service could be installed from native packaging system
+# use this option to let 0install know what packages names are
+#
+#   packaged = <distro-name> <package-name> [, ...]
+#
+# There are basic distro names
+#
+#   rpm     - for all rpm based distros
+#   debian  - for deb based distros
+#   gentoo  - for ebuild based distros
+#
+# and also exact disto names to be more explicit
+#
+#   fedora
+#   suse
+#   mandriva
+#   archlinux
+#   altlinux
+#
+# See for more information
+# http://wiki.sugarlabs.org/go/Documentation_Team/Services/Wrap_native_packages_HOWTO
+#
+; packaged = rpm python-devel
+             debian python-dev
+             mandriva [libpython2.5-devel, libpython2.6-devel]
+             gentoo dev-lang/python
+
+#
+# How to build binaries
+# =====================
+#
+# If service contains binary implementations, this section should present
+# to describe building process
+#
+; [Build]
+
+# What services should present before building this one from sources
+#
+#   <service-name> [(>=|<|~) <version>] [, ...]
+#
+; requires = make, gcc
+
+# Command how to build binaries
+#
+# Its value is a shell command, executed inside the build directory $BUILDDIR.
+# It must compile the source in $SRCDIR, putting the final result (ready for
+# distribution) in $DISTDIR. If this command starts to get complicated, you
+# should move it to a script (either inside the main source archive or in a
+# separate dependency) and just set this attribute to the command to run
+# the script.
+#
+# There are predefined variables that could be useful:
+#
+#   chost   cross-compile to build programs to run on chost
+#   cflags  default CFLAGS, includes also -mtune
+#
+# NOTE: This command will be executed not only in service developer environment
+# but also on user side if proper binary wasn't found, so do not use here any
+# development related commands like autogen.sh
+#
+; exec = "$SRCDIR"/configure --prefix="$DISTDIR" CFLAGS="-O2" && make && make install-strip
+
+#
+# Maintainance section
+# ====================
+#
+# Parameters that make sense only in maintainer environment and won't be
+# exported directly to output feeds
+#
+; [Maintain]
+
+# Web link to service tarball, if parameter is absent, exec from this section
+# will be used to generate tarball
+; source = http://me.org/sources.tar.bz2
+
+# Optional version of the service, if it's absent, version should be passed
+# via --relese 0sugar argument or will be parsed from source tarball.
+# For upstream services, can contain arbitrary value('-' symbol is not permited)
+# for native serivces please follow versioning scheme:
+# http://wiki.sugarlabs.org/go/Documentation_Team/Services/Service_Developers_Guide#Native_versions
+; version = 0
+
+# libtool like age of version, makes sense only for native services
+# that are libraries
+; age = 0
+
+# What services should present before invoking `0sugar dist` command
+#
+#   <service-name> [(>=|<|~) <version>] [, ...]
+#
+; requires = vala
+
+# Patch downloaded tarball, makes sense only if source parameter exists
+# exec should present as well to make new tarball
+#
+#   patch = <path-to-patch> [patch-level] [, ...]
+#
+; patch = my.patch
+
+# Command how to bundle service
+#
+# Shell command, executed from service root directory. If this command starts
+# to get complicated, you should move it to a script and just set this
+# attribute to the command to run the script
+#
+# By default 0sugar just bundle entirely service directory excluding
+# temporary files
+#
+# If source parameter exists in this section, command will be executed within
+# extracted directory of downloaded tarball
+#
+; exec = make distcheck
+
+# If set, documentation project will be created on
+# http://api.sugarlabs.org/services/
+# for now only epydoc value is supported
+; generate-documentation = epydoc
+
+#
+# Sub services
+# ============
+#
+# By default sevice has only one feed - service.xml which will be composed
+# using [Service] section. But service can have additional feeds as well,
+# in that case service.info should contain additional sections
+# (per sub feed) in form:
+#
+#   [Service/<sub-name>]
+#
+# Format of sub sections is identical to [Service] section. Sub feeds could make
+# sense e.g. for having non-arch data feeds and pure binary feeds (to make per
+# architecture implementations) or to have packaged option for runtime packages
+# (Service) and for *dev* packages (Service/devel).
+#
+# There is no need in keeping all [Service] options in every sub section,
+# in that case it will be more useful to move common options to [DEFAULT] section.
+#
+# Other services can mention sub feeds by format:
+#
+#   <service-name>/<sub-name>
+#
+; [Service/full]
+; requires = my_service/data, my_service/binary
+; machine = *
+
+; [Service/data]
+; include = share/*
+; machine = *
+
+; [Service/binary]
+; include = bin/*, lib/*
+; machine = build
+
+#
+# Slots
+# =====
+#
+# Slots make sense only for binary (sub)services when they only depend on
+# native packages. If dependencies are 0installed, then service can just depend
+# on particular dependency verison and they will fetched by 0install, the
+# problem comes when dependencies are native packages when there is no chances
+# to know about aprticular versions in advance.
+#
+# The purpose of using slots is if (sub)service should support several releases
+# of native packages that have different APIs thus (sub)service should be built
+# against several dependency versions. So, final 0install feed will have
+# several implementations per dependency version.
+#
+# Each slot should be in separate section and can contain only requires option
+# to differentiate this slot amond ohters. In particular build environment
+# only one slot can be chosen thus (sub)service should be rebuild in each
+# slot's environment.
+#
+#   [<(sub)service>:<slot-name>]
+#   requires = <dependency> [(>=|<|~) <version>] [, ...]
+#
+; [Service/binary:python25]
+; requires = python ~ 2.5
+
+; [Service/binary:python26]
+; requires = python ~ 2.6

@@ -1,0 +1,161 @@
+From 05873f04d6ca951b1cc61522ac83063184281b11 Mon Sep 17 00:00:00 2001
+From: Aleksey Lim <alsroot@member.fsf.org>
+Date: Sat, 23 Jan 2010 22:58:01 +0000
+Subject: Add Gentoo profile
+
+
+diff --git a/tests/gentoo/sys-apps/portage-2.1.7.16/CHOST b/tests/gentoo/sys-apps/portage-2.1.7.16/CHOST
+new file mode 100644
+index 0000000..f733b5f
+--- /dev/null
++++ b/tests/gentoo/sys-apps/portage-2.1.7.16/CHOST
+@@ -0,0 +1 @@
++x86_64-pc-linux-gnu
+diff --git a/tests/gentoo/sys-apps/portage-2.1.7.16/PF b/tests/gentoo/sys-apps/portage-2.1.7.16/PF
+new file mode 100644
+index 0000000..f73d919
+--- /dev/null
++++ b/tests/gentoo/sys-apps/portage-2.1.7.16/PF
+@@ -0,0 +1 @@
++portage-2.1.7.16
+diff --git a/tests/gentoo/sys-kernel/gentoo-sources-2.6.30-r4/CHOST b/tests/gentoo/sys-kernel/gentoo-sources-2.6.30-r4/CHOST
+new file mode 100644
+index 0000000..f11a8d9
+--- /dev/null
++++ b/tests/gentoo/sys-kernel/gentoo-sources-2.6.30-r4/CHOST
+@@ -0,0 +1 @@
++i686-pc-linux-gnu
+diff --git a/tests/gentoo/sys-kernel/gentoo-sources-2.6.30-r4/PF b/tests/gentoo/sys-kernel/gentoo-sources-2.6.30-r4/PF
+new file mode 100644
+index 0000000..afecb0e
+--- /dev/null
++++ b/tests/gentoo/sys-kernel/gentoo-sources-2.6.30-r4/PF
+@@ -0,0 +1 @@
++gentoo-sources-2.6.30-r4
+diff --git a/tests/gentoo/sys-kernel/gentoo-sources-2.6.32/CHOST b/tests/gentoo/sys-kernel/gentoo-sources-2.6.32/CHOST
+new file mode 100644
+index 0000000..f733b5f
+--- /dev/null
++++ b/tests/gentoo/sys-kernel/gentoo-sources-2.6.32/CHOST
+@@ -0,0 +1 @@
++x86_64-pc-linux-gnu
+diff --git a/tests/gentoo/sys-kernel/gentoo-sources-2.6.32/PF b/tests/gentoo/sys-kernel/gentoo-sources-2.6.32/PF
+new file mode 100644
+index 0000000..6594888
+--- /dev/null
++++ b/tests/gentoo/sys-kernel/gentoo-sources-2.6.32/PF
+@@ -0,0 +1 @@
++gentoo-sources-2.6.32
+diff --git a/tests/testdistro.py b/tests/testdistro.py
+index a9e5764..58e2550 100755
+--- a/tests/testdistro.py
++++ b/tests/testdistro.py
+@@ -56,6 +56,25 @@ class TestDistro(BaseTest):
+ 		self.assertEquals('2.15.23-21', yast.get_version())
+ 		self.assertEquals('*-i586', yast.arch)
+ 
++	def testGentoo(self):
++		pkgdir = os.path.join(os.path.dirname(__file__), 'gentoo')
++		ebuilds = distro.GentooDistribution(pkgdir)
++
++		ebuilds.get_package_info('gimp', self.factory)
++		self.assertEquals({}, self.feed.implementations)
++
++		ebuilds.get_package_info('sys-apps/portage', self.factory)
++		self.assertEquals(1, len(self.feed.implementations))
++		impl = self.feed.implementations['package:gentoo:sys-apps/portage:2.1.7.16:x86_64']
++		self.assertEquals('2.1.7.16', impl.get_version())
++
++		ebuilds.get_package_info('sys-kernel/gentoo-sources', self.factory)
++		self.assertEquals(3, len(self.feed.implementations))
++		impl = self.feed.implementations['package:gentoo:sys-kernel/gentoo-sources:2.6.30-4:i686']
++		self.assertEquals('2.6.30-4', impl.get_version())
++		impl = self.feed.implementations['package:gentoo:sys-kernel/gentoo-sources:2.6.32:x86_64']
++		self.assertEquals('2.6.32', impl.get_version())
++
+ 	def testCleanVersion(self):
+ 		self.assertEquals('1', distro.try_cleanup_distro_version('1:0.3.1-1'))
+ 		self.assertEquals('0.3.1-1', distro.try_cleanup_distro_version('0.3.1-1ubuntu0'))
+diff --git a/zeroinstall/injector/distro.py b/zeroinstall/injector/distro.py
+index e7b96c8..dd6d29e 100644
+--- a/zeroinstall/injector/distro.py
++++ b/zeroinstall/injector/distro.py
+@@ -7,13 +7,14 @@ Integration with native distribution package managers.
+ # See the README file for details, or visit http://0install.net.
+ 
+ from zeroinstall import _
+-import os, re
++import os, re, glob
+ from logging import warn, info
+ from zeroinstall.injector import namespaces, model
+ from zeroinstall.support import basedir
+ 
+ _dotted_ints = '[0-9]+(\.[0-9]+)*'
+-_version_regexp = '(%s)(-(pre|rc|post|)%s)*' % (_dotted_ints, _dotted_ints)
++_version_regexp = '(%s)(-(pre|rc|post|r|)(%s))*' % (_dotted_ints, _dotted_ints)
++_version_start_reqexp = '-[0-9]'
+ 
+ def try_cleanup_distro_version(version):
+ 	"""Try to turn a distribution version string into one readable by Zero Install.
+@@ -22,7 +23,11 @@ def try_cleanup_distro_version(version):
+ 	@rtype: str"""
+ 	match = re.match(_version_regexp, version)
+ 	if match:
+-		return match.group(0)
++		version, __, __, __, revision, __ = match.groups()
++		if revision is None:
++			return version
++		else:
++			return '%s-%s' % (version, revision)
+ 	return None
+ 
+ class Distribution(object):
+@@ -194,6 +199,31 @@ class RPMDistribution(CachedDistribution):
+ 			if machine != '*':
+ 				impl.machine = machine
+ 
++class GentooDistribution(Distribution):
++
++	def __init__(self, pkgdir):
++		self._pkgdir = pkgdir
++
++	def get_package_info(self, package, factory):
++		machine = os.uname()[-1]
++
++		for path in glob.glob('%s/%s-[0-9]*' % (self._pkgdir, package)):
++			name = file(os.path.join(path, 'PF')).readline().strip()
++
++			match = re.search(_version_start_reqexp, name)
++			if match is None:
++				warn(_('Cannot parse version from Gentoo package ' \
++                       'name %(name)s' % {'name': name}))
++				continue
++			else:
++				version = try_cleanup_distro_version(name[match.start() + 1:])
++
++			machine = file(os.path.join(path, 'CHOST')).readline().split('-')[0]
++
++			impl = factory('package:gentoo:%s:%s:%s' % \
++					(package, version, machine))
++			impl.version = model.parse_version(version)
++
+ _host_distribution = None
+ def get_host_distribution():
+ 	"""Get a Distribution suitable for the host operating system.
+@@ -203,8 +233,11 @@ def get_host_distribution():
+ 	if not _host_distribution:
+ 		_dpkg_db_status = '/var/lib/dpkg/status'
+ 		_rpm_db = '/var/lib/rpm/Packages'
++		_gentoo_db = '/var/db/pkg'
+ 
+-		if os.access(_dpkg_db_status, os.R_OK):
++		if os.path.isdir(_gentoo_db):
++			_host_distribution = GentooDistribution(_gentoo_db)
++		elif os.access(_dpkg_db_status, os.R_OK):
+ 			_host_distribution = DebianDistribution(_dpkg_db_status)
+ 		elif os.path.isfile(_rpm_db):
+ 			_host_distribution = RPMDistribution(_rpm_db)
+-- 
+1.6.5.3
+
+

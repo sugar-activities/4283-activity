@@ -1,0 +1,5 @@
+[global]
+freshness = 60
+help_with_testing = False
+network_use = full
+

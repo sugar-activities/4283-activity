@@ -1,0 +1,150 @@
+<?xml version="1.0" ?>
+<?xml-stylesheet type='text/xsl' href='/interface.xsl'?>
+<interface uri="http://services.sugarlabs.org/librsvg"
+           xmlns="http://zero-install.sourceforge.net/2004/injector/interface"
+           xmlns:compile="http://zero-install.sourceforge.net/2006/namespaces/0compile"
+           xmlns:sugar="http://download.sugarlabs.org/services/saccharin/namespaces/0sugar">
+    <name>librsvg</name>
+    <summary>Scalable Vector Graphics (SVG) rendering library</summary>
+    <description>Scalable Vector Graphics (SVG) rendering library</description>
+    <homepage>http://librsvg.sourceforge.net/</homepage>
+    <sugar:sibling interface="http://services.sugarlabs.org/librsvg/devel.xml"/>
+    <package-implementation package="librsvg2" distributions="RPM"/>
+    <package-implementation package="librsvg" distributions="RPM"/>
+    <package-implementation package="librsvg2-2" distributions="Debian"/>
+    <package-implementation package="gnome-base/librsvg" distributions="Gentoo"/>
+    <implementation id="sha1new=7ea5e6172ce5110de669187037f995e5c56e8b43"
+                    version="2.26.0-11"
+                    released="2010-02-09"
+                    arch="*-src"
+                    license="LGPLv2+"
+                    stability="packaged"
+                    compile:command='"$SRCDIR"/configure CFLAGS="-O2 -pipe" --prefix="$DISTDIR" --disable-static --disable-mozilla-plugin --disable-pixbuf-loader --disable-gtk-theme  &amp;&amp; make &amp;&amp; make install-strip'>
+        <environment name="LD_LIBRARY_PATH" mode="prepend" insert="lib"/>
+        <environment name="PKG_CONFIG_PATH" mode="prepend" insert="lib/pkgconfig"/>
+        <requires interface="http://services.sugarlabs.org/fontconfig/devel.xml" compile:include-binary="true">
+        </requires>
+        <requires interface="http://services.sugarlabs.org/freetype/devel.xml" compile:include-binary="true">
+        </requires>
+        <requires interface="http://services.sugarlabs.org/gtk+/devel.xml" compile:include-binary="true">
+        </requires>
+        <requires interface="http://services.sugarlabs.org/glib/devel.xml" compile:include-binary="true">
+        </requires>
+        <requires interface="http://services.sugarlabs.org/cairo/devel.xml" compile:include-binary="true">
+        </requires>
+        <requires interface="http://services.sugarlabs.org/pango/devel.xml" compile:include-binary="true">
+        </requires>
+        <requires interface="http://services.sugarlabs.org/libxml2/devel.xml" compile:include-binary="true">
+        </requires>
+        <requires interface="http://services.sugarlabs.org/libcroco/devel.xml" compile:include-binary="true">
+        </requires>
+        <requires interface="http://services.sugarlabs.org/libgsf/devel.xml" compile:include-binary="true">
+        </requires>
+        <requires interface="http://services.sugarlabs.org/fontconfig" compile:include-binary="true">
+        </requires>
+        <requires interface="http://services.sugarlabs.org/freetype" compile:include-binary="true">
+        </requires>
+        <requires interface="http://services.sugarlabs.org/gtk+" compile:include-binary="true">
+            <version not-before="2.6"/>
+        </requires>
+        <requires interface="http://services.sugarlabs.org/glib" compile:include-binary="true">
+            <version not-before="2.12"/>
+        </requires>
+        <requires interface="http://services.sugarlabs.org/cairo" compile:include-binary="true">
+            <version not-before="1.2"/>
+        </requires>
+        <requires interface="http://services.sugarlabs.org/pango" compile:include-binary="true">
+            <version not-before="1.10"/>
+        </requires>
+        <requires interface="http://services.sugarlabs.org/libxml2" compile:include-binary="true">
+            <version not-before="2.4.7"/>
+        </requires>
+        <requires interface="http://services.sugarlabs.org/libcroco" compile:include-binary="true">
+            <version not-before="0.6.1"/>
+        </requires>
+        <requires interface="http://services.sugarlabs.org/libgsf" compile:include-binary="true">
+        </requires>
+        <requires interface="http://services.sugarlabs.org/pkgconfig">
+        </requires>
+        <requires interface="http://services.sugarlabs.org/gcc-c">
+        </requires>
+        <requires interface="http://services.sugarlabs.org/make">
+        </requires>
+        <archive href="http://download.sugarlabs.org/services/librsvg/librsvg-2.26.0.tar.gz" size="544099" extract="librsvg-2.26.0"/>
+    </implementation>
+    <implementation id="sha1new=fc852ba7892f470029ef5852fb0c7febf90767ca"
+                    version="2.26.0-10"
+                    released="2010-02-06"
+                    arch="Linux-i486"
+                    license="LGPLv2+"
+                    stability="stable">
+        <environment name="LD_LIBRARY_PATH" mode="prepend" insert="lib"/>
+        <requires interface="http://services.sugarlabs.org/fontconfig">
+        </requires>
+        <requires interface="http://services.sugarlabs.org/freetype">
+        </requires>
+        <requires interface="http://services.sugarlabs.org/gtk+">
+            <version not-before="2.6"/>
+        </requires>
+        <requires interface="http://services.sugarlabs.org/glib">
+            <version not-before="2.12"/>
+        </requires>
+        <requires interface="http://services.sugarlabs.org/cairo">
+            <version not-before="1.2"/>
+        </requires>
+        <requires interface="http://services.sugarlabs.org/pango">
+            <version not-before="1.10"/>
+        </requires>
+        <requires interface="http://services.sugarlabs.org/libxml2">
+            <version not-before="2.4.7"/>
+        </requires>
+        <requires interface="http://services.sugarlabs.org/libcroco">
+            <version not-before="0.6.1"/>
+        </requires>
+        <requires interface="http://services.sugarlabs.org/libgsf">
+        </requires>
+        <archive href="http://download.sugarlabs.org/services/librsvg/librsvg-2.26.0-10-Linux-i486.tar.bz2" size="84496"/>
+    </implementation>
+    <implementation id="sha1new=5fc4718dec4f63e1b8f074a032183518808ae92e"
+                    version="2.26.0-10"
+                    released="2010-02-06"
+                    arch="Linux-x86_64"
+                    license="LGPLv2+"
+                    stability="stable">
+        <environment name="LD_LIBRARY_PATH" mode="prepend" insert="lib"/>
+        <requires interface="http://services.sugarlabs.org/fontconfig">
+        </requires>
+        <requires interface="http://services.sugarlabs.org/freetype">
+        </requires>
+        <requires interface="http://services.sugarlabs.org/gtk+">
+            <version not-before="2.6"/>
+        </requires>
+        <requires interface="http://services.sugarlabs.org/glib">
+            <version not-before="2.12"/>
+        </requires>
+        <requires interface="http://services.sugarlabs.org/cairo">
+            <version not-before="1.2"/>
+        </requires>
+        <requires interface="http://services.sugarlabs.org/pango">
+            <version not-before="1.10"/>
+        </requires>
+        <requires interface="http://services.sugarlabs.org/libxml2">
+            <version not-before="2.4.7"/>
+        </requires>
+        <requires interface="http://services.sugarlabs.org/libcroco">
+            <version not-before="0.6.1"/>
+        </requires>
+        <requires interface="http://services.sugarlabs.org/libgsf">
+        </requires>
+        <archive href="http://download.sugarlabs.org/services/librsvg/librsvg-2.26.0-10-Linux-x86_64.tar.bz2" size="93240"/>
+    </implementation>
+</interface>
+<!-- Base64 Signature
+iQEcBAABAgAGBQJLeTIGAAoJEHI8xbS2hpuBr5QH/0KKr45iGSn2hd5BslJeDe62G/s5JLxAxo88
+lVl+Ld7nsD6nRqiJp/5rer6OylCi3zz/gu6crecjuoDVDX1LeKwFAweMhOXrED2XowUweZ2Ovh/y
+alWshQKOjz6xKzmpUfrHpT3ziEkta0QJpVq/Gk2N7w2pdwJUqug1xB8kvlCnJnSM8eAFpP9DnD21
+ac8N7BOXcYQyLRcbQC3XowgsvyyiDEMScy9HvsmSziYM/qBHEs0DxffGt8ALwPXmyYg5PtOHNhUo
+RfvlJICR6xyTf2AEI/3UMDDbgtk8hAYLqwvuEZb9TMP1w2XbcDLHNOwHAcKKNMPm1+lHLDxw1De8
+9tU=
+
+-->

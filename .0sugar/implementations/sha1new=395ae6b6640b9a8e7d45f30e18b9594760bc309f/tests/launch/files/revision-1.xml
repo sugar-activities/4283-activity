@@ -1,0 +1,16 @@
+<?xml version="1.0" ?>
+<?xml-stylesheet type='text/xsl' href='interface.xsl'?>
+<interface uri="http://localhost:8000/.test/refresh.xml" xmlns="http://zero-install.sourceforge.net/2004/injector/interface">
+    <name>test</name>
+    <summary>just for test</summary>
+  <description>
+</description>
+  <implementation id="sha1new=73da919fcc9836a3b752b8c3c7a720080d399e9f" main="main" released="2009-01-01" stability="stable" version="1">
+      <archive href="http://localhost:8000/files/Refresh-1.tgz" size="140" type="application/x-compressed-tar"/>
+  </implementation>
+</interface>
+<!-- Base64 Signature
+iEYEABECAAYFAks8RrkACgkQJc5IBkWoygfMcgCePGDyMUrad8Tf0A1SuY+iHF0zJ00AnReHxFLS
+nkDYbLtlTXdiypzUbqkV
+
+-->

@@ -1,0 +1,25 @@
+<?xml version="1.0" ?>
+<?xml-stylesheet type='text/xsl' href='/interface.xsl'?>
+<interface uri="http://services.sugarlabs.org/libcroco"
+           xmlns="http://zero-install.sourceforge.net/2004/injector/interface"
+           xmlns:compile="http://zero-install.sourceforge.net/2006/namespaces/0compile"
+           xmlns:sugar="http://download.sugarlabs.org/services/saccharin/namespaces/0sugar">
+    <name>libcroco</name>
+    <summary>Generic Cascading Style Sheet (CSS) parsing and manipulation toolkit</summary>
+    <description>Generic Cascading Style Sheet (CSS) parsing and manipulation toolkit</description>
+    <homepage>http://www.freespiders.org/projects/libcroco/</homepage>
+    <sugar:sibling interface="http://services.sugarlabs.org/libcroco/devel.xml"/>
+    <package-implementation package="libcroco0.6_3" distributions="RPM"/>
+    <package-implementation package="libcroco" distributions="RPM"/>
+    <package-implementation package="libcroco3" distributions="Debian"/>
+    <package-implementation package="dev-libs/libcroco" distributions="Gentoo"/>
+</interface>
+<!-- Base64 Signature
+iQEcBAABAgAGBQJLeTHcAAoJEHI8xbS2hpuBcpAH/Rv1rzSFrzNNtq2Xm69l3qOr0wQw38j2Jnbt
+WfCMTl3eSgaQyjZmO2me2Je8nzgZKx7WszycYanYIOsXYrVctpRUgfCiiotRpaYSnm3JBR27ZsQu
+J95CZb9Tb9CeDeUxL8tS9H6fl9M48dhzv1TKHGZKYjn+EL2D+1rwzB45z6+/4+KVfcGru+oe0o5E
+SHUHCsLhjjIi/LkKIiFOHxAI8lhP4r0hHIqwZ654JG8i/zRPyuZBW9I+YbI+al8Ksa52J5A0tb2o
+0aXiGCFSG+68igqNVyDkCUybzyppWz+cR+QqDjNlS+SGRC1tVvTqirGaDkOvk+5tx4YRb6GSJJPp
+ihQ=
+
+-->

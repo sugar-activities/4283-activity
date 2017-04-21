@@ -1,0 +1,27 @@
+<?xml version="1.0" ?>
+<?xml-stylesheet type='text/xsl' href='/interface.xsl'?>
+<interface uri="http://services.sugarlabs.org/gtk+"
+           xmlns="http://zero-install.sourceforge.net/2004/injector/interface"
+           xmlns:compile="http://zero-install.sourceforge.net/2006/namespaces/0compile"
+           xmlns:sugar="http://download.sugarlabs.org/services/saccharin/namespaces/0sugar">
+    <name>gtk+</name>
+    <summary>Gimp ToolKit +</summary>
+    <description>Gimp ToolKit +</description>
+    <homepage>http://www.gtk.org/</homepage>
+    <sugar:sibling interface="http://services.sugarlabs.org/gtk+/devel.xml"/>
+    <package-implementation package="gtk2" distributions="archlinux"/>
+    <package-implementation package="libgtk+2" distributions="RPM"/>
+    <package-implementation package="gtk2" distributions="RPM"/>
+    <package-implementation package="libgtk+2.0_0" distributions="RPM"/>
+    <package-implementation package="libgtk2.0-0" distributions="Debian"/>
+    <package-implementation package="x11-libs/gtk+" distributions="Gentoo"/>
+</interface>
+<!-- Base64 Signature
+iQEcBAABAgAGBQJLeTHPAAoJEHI8xbS2hpuBn6EH/A+Erl60OGNmvkuWV6fgTy6VKTGJynCxLZWP
+nXn0gZFNiisdaE46B2EtLfuiWzOWmSyCrrAlIsuO5c3tWV+OQkl2KwgwXeVd+E/2YRRWnB9GLvJ8
+43sUbdosHvS9gWkN3jj4xOjA/hAixzFDzkIFhmxha1253dJsMSJmblfGw9g1A1MgLYxkjd/XS1nQ
+XDyS4gAwqMab9soNsy5m+Z0FoQePIEG6xypy0/hWsqcDI+scUBbAT2dHSKG0ltAKyvbFm8V77onv
+zppHRBtX6I0/s2ZicrJSKZHEGPjitiu9XFkSDUyap2HeoevUkuLZEakQuQLjwVCTFaYPEfNZNd5x
+M1U=
+
+-->

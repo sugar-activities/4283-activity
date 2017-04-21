@@ -1,0 +1,27 @@
+<?xml version="1.0" ?>
+<?xml-stylesheet type='text/xsl' href='/interface.xsl'?>
+<interface uri="http://services.sugarlabs.org/freetype"
+           xmlns="http://zero-install.sourceforge.net/2004/injector/interface"
+           xmlns:compile="http://zero-install.sourceforge.net/2006/namespaces/0compile"
+           xmlns:sugar="http://download.sugarlabs.org/services/saccharin/namespaces/0sugar">
+    <name>freetype</name>
+    <summary>A high-quality and portable font engine</summary>
+    <description>A high-quality and portable font engine</description>
+    <homepage>http://www.freetype.org/</homepage>
+    <sugar:sibling interface="http://services.sugarlabs.org/freetype/devel.xml"/>
+    <package-implementation package="freetype2" distributions="archlinux"/>
+    <package-implementation package="freetype" distributions="RPM"/>
+    <package-implementation package="libfreetype" distributions="RPM"/>
+    <package-implementation package="freetype2" distributions="RPM"/>
+    <package-implementation package="libfreetype6" distributions="Debian"/>
+    <package-implementation package="media-libs/freetype" distributions="Gentoo"/>
+</interface>
+<!-- Base64 Signature
+iQEcBAABAgAGBQJLeTFnAAoJEHI8xbS2hpuBQTMH/A62CFiD5XXjs4qk1geOgxfaHw648faH8K/+
+8CBbDweo4u/B0LpMSCgrWa8m8rZWjbXBN5yDVlWr4SKeAC+eGup7hlZnCNBJLvbfQcNe/GLSTTjk
+0EVk5cVsKbJhRhzHkUXQ0JI4ZqttKgSJKRa5mSyPwbu1obV5+CZRryyoYUTbu+FlywxJZnR/3fbN
+FICbBGYvUvObcUjQoq0I9vtOpXFIEWnoilzTl8lTcCLFfTdHsfaiZUHZ9y4xAFRhwRP76QdD/4CH
+rSmrjJHwXSBitOIeBdr30m1xW+MSuVUuIlkh9yS3HqQnyh/l0E7ejx31Z/AYphpdhZ5TwyjRvKZ0
+zTQ=
+
+-->

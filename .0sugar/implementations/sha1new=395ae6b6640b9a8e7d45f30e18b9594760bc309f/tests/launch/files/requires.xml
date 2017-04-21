@@ -1,0 +1,22 @@
+<?xml version="1.0" ?>
+<?xml-stylesheet type='text/xsl' href='interface.xsl'?>
+<interface uri="http://localhost:8000/files/requires.xml" xmlns="http://zero-install.sourceforge.net/2004/injector/interface">
+    <name>test</name>
+    <summary>just for test</summary>
+  <description>
+</description>
+  <implementation id="sha1new=cfb1216b9c86ff1da423facd0ee309c3d5f03047" released="2009-12-13" version="1">
+    <requires interface="http://localhost:8000/files/dependency.xml">
+      <environment insert="" mode="prepend" name="PATH"/>
+    </requires>
+    <requires interface="http://localhost:8000/files/download.xml">
+      <environment insert="" mode="prepend" name="LD_LIBRARY_PATH"/>
+    </requires>
+      <archive href="http://localhost:8000/files/Requires.tgz" size="139" type="application/x-compressed-tar"/>
+  </implementation>
+</interface>
+<!-- Base64 Signature
+iEYEABECAAYFAks/PKAACgkQJc5IBkWoygfomgCeM2pWd865MoH02FdaIYQTrxB6s6UAoIS1Mvgy
+nZMrw17gPvON/tFkHxsu
+
+-->

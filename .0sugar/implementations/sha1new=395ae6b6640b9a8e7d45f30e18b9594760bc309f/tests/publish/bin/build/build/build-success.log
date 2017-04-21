@@ -1,0 +1,35 @@
+Build log for bin-1.3
+
+Built using 0compile-0.18
+
+Build system: Linux, antilopa-gnu, 2.6.31-gentoo-r6, #1 SMP PREEMPT Wed Nov 25 00:47:19 UTC 2009, x86_64
+
+0compile.properties:
+
+[compile]
+interface = /home/sugar/src/git/0sugar/tests/bin/build/feed.xml
+distdir = dist
+
+Executing: "$SRCDIR"/configure --prefix="$DISTDIR" CFLAGS="-O2" && make install
+checking for gcc
+checking how to run the C preprocessor
+checking for install
+checking for ANSI C header files
+checking for string.h
+checking for fcntl.h
+checking for sys/file.h
+checking for working alloca.h
+checking for alloca
+creating config.status
+creating Makefile
+/home/sugar/src/git/0sugar/tests/bin/build/src/hello-1.3/mkinstalldirs /home/sugar/src/git/0sugar/tests/bin/build/dist/bin /home/sugar/src/git/0sugar/tests/bin/build/dist/info
+mkdir /home/sugar/src/git/0sugar/tests/bin/build/dist/bin
+mkdir /home/sugar/src/git/0sugar/tests/bin/build/dist/info
+gcc -c  -DSTDC_HEADERS=1 -DHAVE_STRING_H=1 -DHAVE_FCNTL_H=1 -DHAVE_SYS_FILE_H=1 -DHAVE_ALLOCA_H=1 -g /home/sugar/src/git/0sugar/tests/bin/build/src/hello-1.3/hello.c
+gcc -c  -DSTDC_HEADERS=1 -DHAVE_STRING_H=1 -DHAVE_FCNTL_H=1 -DHAVE_SYS_FILE_H=1 -DHAVE_ALLOCA_H=1 -g /home/sugar/src/git/0sugar/tests/bin/build/src/hello-1.3/version.c
+gcc -c  -DSTDC_HEADERS=1 -DHAVE_STRING_H=1 -DHAVE_FCNTL_H=1 -DHAVE_SYS_FILE_H=1 -DHAVE_ALLOCA_H=1 -g /home/sugar/src/git/0sugar/tests/bin/build/src/hello-1.3/getopt.c
+gcc -c  -DSTDC_HEADERS=1 -DHAVE_STRING_H=1 -DHAVE_FCNTL_H=1 -DHAVE_SYS_FILE_H=1 -DHAVE_ALLOCA_H=1 -g /home/sugar/src/git/0sugar/tests/bin/build/src/hello-1.3/getopt1.c
+gcc -g -o hello hello.o version.o getopt.o getopt1.o  
+/usr/bin/install -c hello /home/sugar/src/git/0sugar/tests/bin/build/dist/bin/hello
+/usr/bin/install -c -m 644 /home/sugar/src/git/0sugar/tests/bin/build/src/hello-1.3/hello.info /home/sugar/src/git/0sugar/tests/bin/build/dist/info/hello.info
+Build successful

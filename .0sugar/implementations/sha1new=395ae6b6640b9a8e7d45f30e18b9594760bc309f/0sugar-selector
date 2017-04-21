@@ -1,0 +1,141 @@
+#!/usr/bin/env python
+
+# Copyright (C) 2010, Aleksey Lim
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
+import os
+import sys
+import subprocess
+from xml.dom.minidom import parse, Element
+from os.path import join, basename, exists, expanduser, dirname, abspath
+
+from zerosugar.util.toolkit import system, gnupg, escape, unescape
+
+if exists('/etc/olpc-security'):
+    activity_root = os.environ.get('SUGAR_ACTIVITY_ROOT')
+    if activity_root:
+        activity_root = join(activity_root, 'data')
+        if not exists(activity_root):
+            os.makedirs(activity_root)
+        dirs = {'GNUPGHOME': '.gnupg',
+                'XDG_CONFIG_HOME': '.config',
+                'XDG_CACHE_HOME': '.cache',
+                'XDG_CACHE_DIRS': '.var'}
+        for key, name in dirs.items():
+            os.environ[key] = join(activity_root, name)
+
+CACHE_DIR = os.environ.get('XDG_CACHE_HOME', expanduser('~/.cache'))
+IFACE_PATH = join(CACHE_DIR, '0install.net', 'interfaces')
+IMPL_PATH = join(CACHE_DIR, '0install.net', 'implementations')
+LAUNCH_IFACE = join(IFACE_PATH,
+        escape('http://services.sugarlabs.org/0sugar/launcher.xml'))
+LAUNCH_CMD = '0sugar-launch'
+ROOT = abspath(join(dirname(__file__), '..', '..'))
+
+ARGV =  sys.argv[1:]
+
+def which(cmd):
+    return system('which %s' % cmd)[1] is None
+
+def abort(message, try_origin=True):
+    if try_origin and which(LAUNCH_CMD):
+        print message + ' Will run original %s...' % LAUNCH_CMD
+        os.execvp(LAUNCH_CMD, [LAUNCH_CMD] + ARGV)
+    elif which('zenity'):
+        os.execvp('zenity', ['zenity', '--error', '--text', message])
+    elif which('xmessage'):
+        os.execvp('xmessage', ['xmessage', message])
+    else:
+        print message
+    exit(1)
+
+def import_feed(feed):
+    from zeroinstall.injector import gpg, trust, iface_cache
+
+    url = unescape(feed)
+    feed_path = join(ROOT, 'interfaces', feed)
+    domain = trust.domain_from_url(url)
+    feed_stream = file(feed_path)
+    stream, sigs = gpg.check_stream(feed_stream)
+
+    for sig in sigs:
+        if not trust.trust_db.is_trusted(sig.fingerprint, domain):
+            trust.trust_db.trust_key(sig.fingerprint, domain)
+    oldest_sig = min([i.get_timestamp() for i in sigs])
+
+    iface = iface_cache.iface_cache.get_interface(url)
+    try:
+        iface_cache.iface_cache.update_interface_from_network(iface,
+                stream.read(), oldest_sig)
+        print 'Import %s feed.' % url
+    except iface_cache.ReplayAttack:
+        print 'Feed %s already exists.' % url
+
+    if feed_stream is not stream:
+        feed_stream.close()
+    stream.close()
+
+    user_cache = join(IFACE_PATH, feed)
+    if exists('/etc/olpc-security'):
+        mtime = None
+    else:
+        mtime = os.stat(feed_path).st_mtime
+        mtime = (mtime, mtime)
+    os.utime(user_cache, mtime)
+
+uncached_ifaces = []
+for i in os.listdir(join(ROOT, 'interfaces')):
+    user_cache = join(IFACE_PATH, i)
+    if not exists(user_cache) or os.stat(user_cache).st_mtime < \
+            os.stat(join(ROOT, 'interfaces', i)).st_mtime:
+        uncached_ifaces.append(i)
+
+if uncached_ifaces:
+    # Maybe GPG has never been run before. Let it initialse, or we'll get
+    # an error code from the first import... (ignore return value here)
+    subprocess.call([gnupg(), '--check-trustdb'])
+
+    key_dir = join(ROOT, 'keys')
+    for key in os.listdir(join(ROOT, 'keys')):
+        if system('%s --import %s' % (gnupg(), join(key_dir, key)))[1]:
+            abort('Cannot import gpg key.')
+
+    for feed in uncached_ifaces:
+        import_feed(feed)
+
+if not exists(LAUNCH_IFACE):
+    abort('Cannot find cached %s interface.' % LAUNCH_CMD)
+
+xml = parse(LAUNCH_IFACE)
+impls = [i for i in xml.documentElement.childNodes if isinstance(i, Element) \
+        and i.nodeName == 'implementation']
+
+while impls:
+    i = max(impls, key=lambda i: int(i.getAttribute('version').split('-')[0]))
+    impls.remove(i)
+
+    if i.getAttribute('stability') != 'stable':
+        continue
+
+    for cache in (IMPL_PATH, join(ROOT, 'implementations')):
+        impl_path = join(cache, i.getAttribute('id'))
+        impl_cmd = join(impl_path, LAUNCH_CMD)
+        if exists(impl_cmd):
+            os.environ['PYTHONPATH'] = '%s:%s' % \
+                    (impl_path, os.environ.get('PYTHONPATH', ''))
+            os.execve(impl_cmd, [impl_cmd] + ARGV, os.environ)
+
+abort('Cannot find cached %s implementation.' % LAUNCH_CMD)

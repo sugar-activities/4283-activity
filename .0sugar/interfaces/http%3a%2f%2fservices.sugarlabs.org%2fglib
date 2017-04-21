@@ -1,0 +1,25 @@
+<?xml version="1.0" ?>
+<?xml-stylesheet type='text/xsl' href='/interface.xsl'?>
+<interface uri="http://services.sugarlabs.org/glib"
+           xmlns="http://zero-install.sourceforge.net/2004/injector/interface"
+           xmlns:compile="http://zero-install.sourceforge.net/2006/namespaces/0compile"
+           xmlns:sugar="http://download.sugarlabs.org/services/saccharin/namespaces/0sugar">
+    <name>glib</name>
+    <summary>The GLib library of C routines</summary>
+    <description>The GLib library of C routines</description>
+    <homepage>http://www.gtk.org/</homepage>
+    <sugar:sibling interface="http://services.sugarlabs.org/glib/devel.xml"/>
+    <package-implementation package="glib2" distributions="RPM"/>
+    <package-implementation package="libglib2.0_0" distributions="RPM"/>
+    <package-implementation package="libglib2.0-0" distributions="Debian"/>
+    <package-implementation package="dev-libs/glib" distributions="Gentoo"/>
+</interface>
+<!-- Base64 Signature
+iQEcBAABAgAGBQJLeTGbAAoJEHI8xbS2hpuBW5IIAI5knXlfZGLlT48qC4EPRUUEUuSHq3lzzpZA
+yM8TaXkwK9QrC3gxpvwvriQovedCnpQSXPYviPESZRYfBKXqNvWsKqYd1HJvznuNBc2tL9UtqZuh
+ILLwhemqXOT3ct+2Yeiye77yo+3n+6cbHIbeT5DEqli5qT0kTJcAHEIBstWw594prflqh6JvPxk2
+zv0+4scgiQyfcEU2C+ajKBgrIX+90hOfWbIN8A+YNUL1TBijnZhuDl9QnNV97QB/tGeiepBR9MT9
+9FbVU004AJL0gT4ezKYxMW6hBqP++hgDLr6Iqp9aqf4YF0mP/jomOBqGkCihbV7bA1Qxekht1xr2
+YRE=
+
+-->

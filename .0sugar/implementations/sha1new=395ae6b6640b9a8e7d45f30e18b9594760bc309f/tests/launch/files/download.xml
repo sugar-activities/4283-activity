@@ -1,0 +1,16 @@
+<?xml version="1.0" ?>
+<?xml-stylesheet type='text/xsl' href='interface.xsl'?>
+<interface uri="http://localhost:8000/files/download.xml" xmlns="http://zero-install.sourceforge.net/2004/injector/interface">
+    <name>test</name>
+    <summary>just for test</summary>
+  <description>
+</description>
+  <implementation id="sha1new=491678c37f77fadafbaae66b13d48d237773a68f" main="ls" released="2009-12-13" version="1">
+    <archive extract="HelloWorld" href="http://localhost:8000/files/HelloWorld.tgz" size="176" type="application/x-compressed-tar"/>
+  </implementation>
+</interface>
+<!-- Base64 Signature
+iEYEABECAAYFAkslRIEACgkQJc5IBkWoygcdhwCfbbhrg7C9jymO9+a3BbEzRbsXWf0An2PfuwnX
+41U1vXOnZjBIs3FIMuEn
+
+-->

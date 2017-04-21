@@ -1,0 +1,26 @@
+[DEFAULT]
+name = noarch
+summary = noarch summary
+license = GPLv2+
+homepage = http://noarch/
+
+[Service]
+version = 1
+requires = noarch-dep
+main = foo/oof/noarch-main
+include = service.info
+
+[Service/1]
+requires = 1/1
+main = 1
+include = 1
+
+[Service/2]
+requires = 2/2
+main = 2
+exclude = dist/*
+
+[Service/3]
+requires = 3
+main = 3
+exclude = service.info

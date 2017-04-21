@@ -1,0 +1,37 @@
+<?xml version="1.0" ?>
+<interface uri="http://download.sugarlabs.org/services/bin/service.xml"
+           xmlns="http://zero-install.sourceforge.net/2004/injector/interface"
+           xmlns:compile="http://zero-install.sourceforge.net/2006/namespaces/0compile"
+           xmlns:sugar="http://download.sugarlabs.org/services/saccharin/namespaces/0sugar">
+    <name>bin</name>
+    <summary>bin summary</summary>
+    <description>bin summary</description>
+    <homepage>http://bin/</homepage>
+    <implementation id="sha1new=2aae32fd27d194167eac7eb611d7ce0983f83dd7"
+                    version="1.3"
+                    released="new"
+                    arch="*-src"
+                    license="GPLv2+"
+                    stability="testing"
+                    compile:command='"$SRCDIR"/configure --prefix="$DISTDIR" CFLAGS="-O2" &amp;&amp; make install'>
+        <archive href="http://download.sugarlabs.org/services/bin/hello-1.3.tar.gz" size="87942" extract="hello-1.3"/>
+    </implementation>
+    <implementation id="sha1new=b2addf84e870fb0bc969a4d6b46dfa98b46df115"
+                    version="1.3"
+                    released="new"
+                    arch="Linux-x86_64"
+                    license="GPLv2+"
+                    stability="testing"
+                    main="noarch-main">
+        <archive href="http://download.sugarlabs.org/services/bin/bin-Linux-x86_64-1.3.tar.bz2" size="16139"/>
+    </implementation>
+</interface>
+<!-- Base64 Signature
+iQEcBAABAgAGBQJLYQsEAAoJEHI8xbS2hpuBmMcIALrNiGaV9l8K6FL2QwqUwxLQj2rBoB1+zpXL
+FdZPnBUAlGNFWrZFkcleszi/RZUkw7cvqA7kalCEGaad5cUR+7HEpn8duj4za989t7noZYcMbp3H
+2xz9B+kwqWtE6+KsBKko2+OvEXduDvRhaJoQoyNP8GCGFHBBtBsUWhKiGfoe9vUgbXCtT7RybO7L
+lwmoN3Ac9EFZPONSZNb5765J55/q8oaMPYuTY+fEvM0mKwEPRhxb1QhL6hyquA5kIF2XfsrFjOvk
+TOqauXntVvt8iYZLBy0hwoyAnVQ20fK5D94cA0o/A7LkKu8vZKpXla3PeUQ2+DnVVa6NoltCFwW3
+/uQ=
+
+-->
